@@ -96,14 +96,26 @@ router.get('/:id', async (req, res, next) => {
     payments.forEach(p => {
       dailyPaidByDate[p.payment_date] = (dailyPaidByDate[p.payment_date] || 0) + Number(p.amount);
     });
+    // Walk day-by-day in order so we can carry advance/surplus payments forward.
+    // A day counts as "covered" when the cumulative paid through that day
+    // is >= the cumulative expected through that day.
+    const daily = Number(loan.daily_payment);
+    let cumPaid = 0;
+    let cumExpected = 0;
     for (let i = 0; i < Number(loan.term_days); i++) {
       // Day 1 = start_date itself; Day N = start_date + (N-1) days.
       const dateStr = addDays(loan.start_date, i);
+      const todaysPay = dailyPaidByDate[dateStr] || 0;
+      cumPaid += todaysPay;
+      cumExpected += daily;
       schedule.push({
         day: i + 1,
         date: dateStr,
-        expected: Number(loan.daily_payment),
-        paid: dailyPaidByDate[dateStr] || 0
+        expected: daily,
+        paid: todaysPay,
+        cumPaid: +cumPaid.toFixed(2),
+        cumExpected: +cumExpected.toFixed(2),
+        covered: cumPaid + 0.005 >= cumExpected
       });
     }
 

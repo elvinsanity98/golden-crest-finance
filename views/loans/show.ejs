@@ -157,7 +157,9 @@
     <div class="grid grid-cols-7 sm:grid-cols-10 md:grid-cols-14 lg:grid-cols-15 gap-1">
       <% schedule.forEach(s => {
         var status;
-        if (s.paid >= s.expected) status = 'paid';
+        // Cumulative coverage: a day is paid if total paid through this day
+        // covers total expected — advance payments roll forward.
+        if (s.covered) status = 'paid';
         else if (s.paid > 0) status = 'partial';
         else if (s.date < todayStr) status = 'missed';
         else if (s.date === todayStr) status = 'today';
@@ -169,8 +171,12 @@
           today: 'bg-brand-500 text-slate-900 ring-2 ring-brand-300',
           future: 'bg-slate-100 text-slate-500'
         })[status];
+        var tip = 'Day ' + s.day + ' · ' + s.date + '\nPaid this day: ' + fmt.money(s.paid) + ' of ' + fmt.money(s.expected);
+        if (s.paid !== s.cumPaid) {
+          tip += '\nCumulative: ' + fmt.money(s.cumPaid) + ' of ' + fmt.money(s.cumExpected);
+        }
       %>
-        <div class="<%= cls %> aspect-square rounded text-[10px] flex items-center justify-center font-bold cursor-help" title="Day <%= s.day %> · <%= s.date %> · Paid <%= fmt.money(s.paid) %> of <%= fmt.money(s.expected) %>">
+        <div class="<%= cls %> aspect-square rounded text-[10px] flex items-center justify-center font-bold cursor-help" title="<%= tip %>">
           <%= s.day %>
         </div>
       <% }); %>
