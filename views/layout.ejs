@@ -49,7 +49,7 @@
       <%- body %>
       <footer class="mt-16 pt-6 border-t border-slate-200 text-center text-xs text-slate-500">
         <p>&copy; <%= brand.year %> <span class="font-semibold text-slate-700"><%= brand.name %></span> · Owned by <%= brand.owner %></p>
-        <p class="mt-1">Developed by <a href="#" class="text-brand-600 font-semibold hover:underline"><%= brand.devCredit %></a></p>
+        <p class="mt-1">Developed by <a href="<%= brand.devUrl %>" target="_blank" rel="noopener" class="text-brand-600 font-semibold hover:underline"><%= brand.devCredit %></a></p>
       </footer>
     </main>
   </div>

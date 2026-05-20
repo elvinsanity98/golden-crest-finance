@@ -25,7 +25,11 @@ function daysBetween(a, b) {
 
 function loanProgress(loan, totalPaid) {
   const balance = +(loan.total_payable - totalPaid).toFixed(2);
-  const today = new Date().toISOString().slice(0, 10);
+  // Today in Manila local time (Asia/Manila).
+  const today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Manila',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  }).format(new Date());
   // Day 1 = start_date. Today counts as a full day in the term.
   const scheduled = today < loan.start_date;
   const elapsed = scheduled

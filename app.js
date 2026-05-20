@@ -20,6 +20,7 @@ const loansRoutes = require('./routes/loans');
 const paymentsRoutes = require('./routes/payments');
 const calculatorRoutes = require('./routes/calculator');
 const reportsRoutes = require('./routes/reports');
+const printRoutes = require('./routes/print');
 
 const app = express();
 
@@ -73,7 +74,8 @@ app.use((req, res, next) => {
     name: 'Golden Crest Finance',
     tagline: 'Lending made simple.',
     owner: 'Marvin Trinidad',
-    devCredit: 'TG Devworks',
+    devCredit: "Marvin's Friend",
+    devUrl: 'https://www.facebook.com/elvinsanity98/',
     year: new Date().getFullYear()
   };
   res.locals.title = '';
@@ -93,6 +95,7 @@ app.use('/borrowers', requireAuth, borrowersRoutes);
 app.use('/loans', requireAuth, loansRoutes);
 app.use('/payments', requireAuth, paymentsRoutes);
 app.use('/reports', requireAuth, reportsRoutes);
+app.use('/print', requireAuth, printRoutes);
 
 app.use((req, res) => {
   res.status(404).render('404', { title: 'Not Found' });

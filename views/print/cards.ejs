@@ -1,0 +1,231 @@
+<%
+const count = slots.length;
+// Per-card layout knobs based on how many cards share one bond paper.
+// Letter portrait, ~10.2in usable height after 0.35in margins.
+const cardCfg = {
+  1: { rows: 32, rowH: '0.22in', fontHeader: '20px', fontInfo: '12px', fontTable: '11px' },
+  2: { rows: 22, rowH: '0.16in', fontHeader: '17px', fontInfo: '11px', fontTable: '10px' },
+  3: { rows: 14, rowH: '0.14in', fontHeader: '15px', fontInfo: '10px', fontTable: '9px'  },
+  4: { rows: 11, rowH: '0.12in', fontHeader: '14px', fontInfo: '9.5px', fontTable: '8.5px' },
+  5: { rows: 9,  rowH: '0.10in', fontHeader: '13px', fontInfo: '9px', fontTable: '8px'  }
+};
+const cfg = cardCfg[count] || cardCfg[5];
+%>
+
+<style>
+  /* On-screen preview */
+  .print-sheet {
+    background: white;
+    width: 8.5in;
+    min-height: 11in;
+    padding: 0.35in;
+    margin: 0 auto;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    box-sizing: border-box;
+  }
+  .pay-card {
+    border: 2px solid #111;
+    padding: 0.08in 0.14in;
+    display: flex;
+    flex-direction: column;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    background: #fdf4f4;
+  }
+  .pay-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-bottom: 1px solid #999;
+    padding-bottom: 3px;
+    margin-bottom: 4px;
+  }
+  .pay-card-logo {
+    background: linear-gradient(135deg, #fbbf24, #b45309);
+    color: #1e293b;
+    font-weight: 800;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .pay-card-title {
+    font-weight: 800;
+    color: #1e3a8a;
+    letter-spacing: 1px;
+    font-size: <%= cfg.fontHeader %>;
+  }
+  .pay-card-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 10px;
+    row-gap: 1px;
+    font-size: <%= cfg.fontInfo %>;
+    line-height: 1.25;
+    margin-bottom: 4px;
+  }
+  .pay-card-info .full { grid-column: 1 / -1; }
+  .pay-card-info .blank-line {
+    display: inline-block;
+    border-bottom: 1px solid #555;
+    min-width: 80px;
+    padding: 0 4px;
+    font-weight: 600;
+  }
+  .pay-card-table {
+    border-collapse: collapse;
+    width: 100%;
+    flex: 1;
+    font-size: <%= cfg.fontTable %>;
+  }
+  .pay-card-table th, .pay-card-table td {
+    border: 1px solid #444;
+    text-align: center;
+    padding: 0;
+  }
+  .pay-card-table th {
+    background: #f0e4e0;
+    font-weight: 700;
+    padding: 2px 0;
+  }
+  .pay-card-table tbody td {
+    height: <%= cfg.rowH %>;
+  }
+
+  @media print {
+    @page { size: letter portrait; margin: 0.35in; }
+    body { background: white !important; margin: 0 !important; }
+    html, body { width: auto !important; }
+    header, aside, nav, footer, .no-print { display: none !important; }
+    main { padding: 0 !important; margin: 0 !important; }
+    .print-sheet {
+      width: 100% !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      box-shadow: none !important;
+    }
+    .pay-card { background: white !important; }
+  }
+</style>
+
+<div class="no-print mb-6">
+  <%- include('../partials/page-header', { heading: 'Print Payment Cards', eyebrow: 'Client Records', subtitle: 'Generate physical cards (up to 5 per bond paper). Borrowers can write their own daily payment records on these cards.' }) %>
+
+  <form method="GET" action="/print/cards" class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-6">
+    <p class="text-sm text-slate-600 mb-4">Pick up to <strong><%= maxCards %></strong> borrowers (or leave a slot blank for an empty card the owner can fill in by hand).</p>
+
+    <div class="space-y-3">
+      <% for (let i = 0; i < maxCards; i++) { %>
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-sm flex-shrink-0">#<%= i + 1 %></span>
+          <select name="b<%= i + 1 %>" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm">
+            <option value="">— Skip this slot —</option>
+            <option value="blank" <%= raw[i] === 'blank' ? 'selected' : '' %>>📝 Blank card (owner fills in by hand)</option>
+            <% borrowers.forEach(b => { %>
+              <option value="<%= b.id %>" <%= String(raw[i]) === String(b.id) ? 'selected' : '' %>>
+                <%= b.full_name %><% if (b.active_loan_id) { %> · Loan #<%= b.active_loan_id %> · daily <%= fmt.money(b.daily_payment) %><% } else { %> · no active loan<% } %>
+              </option>
+            <% }); %>
+          </select>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="mt-5 flex flex-wrap gap-2">
+      <button class="bg-brand-500 hover:bg-brand-400 text-slate-900 font-bold px-5 py-2.5 rounded-lg shadow text-sm">Generate Preview →</button>
+      <a href="/print/cards" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-5 py-2.5 rounded-lg text-sm">Reset</a>
+    </div>
+  </form>
+</div>
+
+<% if (hasSelection) { %>
+  <% if (count === 0) { %>
+    <div class="no-print bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-4 text-sm">
+      You didn't pick any borrower or blank card. Choose at least one slot above.
+    </div>
+  <% } else { %>
+    <div class="no-print bg-slate-900 text-white rounded-xl p-4 mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <div class="text-xs font-bold uppercase tracking-wider text-brand-300">Ready to print</div>
+        <div class="font-semibold mt-0.5"><%= count %> card<%= count > 1 ? 's' : '' %> on 1 bond paper (Letter portrait)</div>
+      </div>
+      <button onclick="window.print()" class="bg-brand-500 hover:bg-brand-400 text-slate-900 font-bold px-5 py-2.5 rounded-lg shadow text-sm inline-flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+        Print Now
+      </button>
+    </div>
+
+    <div class="print-sheet" style="display: grid; grid-template-rows: repeat(<%= count %>, 1fr); gap: 0.12in;">
+      <% slots.forEach(s => {
+        const isBlank = s.kind === 'blank';
+        const data = isBlank ? {} : s.data;
+        const cardNum = data.active_loan_id ? '#' + data.active_loan_id : '';
+        const name = data.full_name || '';
+        const addr = data.address || '';
+        const due = data.due_date ? fmt.date(data.due_date) : '';
+        const daily = data.daily_payment ? fmt.money(data.daily_payment) : '';
+        const dateToday = isBlank ? '' : fmt.date(fmt.today());
+      %>
+        <div class="pay-card">
+          <div class="pay-card-head">
+            <span class="pay-card-logo">GC</span>
+            <span class="pay-card-title">GOLDEN CREST FINANCE</span>
+          </div>
+
+          <div class="pay-card-info">
+            <div>
+              Date:
+              <span class="blank-line"><%= dateToday %></span>
+            </div>
+            <div>
+              Card #:
+              <span class="blank-line"><%= cardNum %></span>
+            </div>
+            <div class="full">
+              Name:
+              <span class="blank-line" style="min-width: 80%;"><%= name %></span>
+            </div>
+            <div class="full">
+              Address:
+              <span class="blank-line" style="min-width: 80%;"><%= addr %></span>
+            </div>
+            <div>
+              Due Date:
+              <span class="blank-line"><%= due %></span>
+            </div>
+            <div>
+              Daily Pay:
+              <span class="blank-line"><%= daily %></span>
+            </div>
+          </div>
+
+          <table class="pay-card-table">
+            <thead>
+              <tr>
+                <th style="width: 13%;">Dt</th>
+                <th style="width: 13%;">Pmt</th>
+                <th style="width: 12%;">Bal</th>
+                <th style="width: 12%;">Sig</th>
+                <th style="width: 13%;">Dt</th>
+                <th style="width: 13%;">Pmt</th>
+                <th style="width: 12%;">Bal</th>
+                <th style="width: 12%;">Sig</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% for (let r = 0; r < cfg.rows; r++) { %>
+                <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      <% }); %>
+    </div>
+  <% } %>
+<% } %>
