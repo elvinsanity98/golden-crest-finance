@@ -61,7 +61,7 @@
     <div class="h-full bg-gradient-to-r from-brand-400 to-brand-600 rounded-full transition-all" style="width: <%= progress.percentPaid %>%"></div>
   </div>
   <div class="grid grid-cols-3 gap-2 mt-4 text-center text-xs">
-    <div><div class="font-bold text-slate-900"><%= progress.elapsed %> / <%= loan.term_days %></div><div class="text-slate-500">Days elapsed</div></div>
+    <div><div class="font-bold text-slate-900">Day <%= progress.elapsed %> / <%= loan.term_days %></div><div class="text-slate-500">Current day</div></div>
     <div><div class="font-bold text-slate-900"><%= progress.daysRemaining %></div><div class="text-slate-500">Days remaining</div></div>
     <div><div class="font-bold text-slate-900"><%= fmt.money(loan.daily_payment) %></div><div class="text-slate-500">Daily target</div></div>
   </div>

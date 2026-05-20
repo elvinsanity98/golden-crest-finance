@@ -23,7 +23,8 @@ router.get('/', (req, res) => {
       });
       schedule = [];
       for (let i = 0; i < result.termDays; i++) {
-        schedule.push({ day: i + 1, date: addDays(form.start_date, i + 1), amount: result.dailyPayment });
+        // Day 1 = start date itself
+        schedule.push({ day: i + 1, date: addDays(form.start_date, i), amount: result.dailyPayment });
       }
     } catch (e) {
       error = e.message;

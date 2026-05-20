@@ -26,11 +26,14 @@ function daysBetween(a, b) {
 function loanProgress(loan, totalPaid) {
   const balance = +(loan.total_payable - totalPaid).toFixed(2);
   const today = new Date().toISOString().slice(0, 10);
-  const elapsed = Math.max(0, Math.min(loan.term_days, daysBetween(loan.start_date, today)));
-  const expectedPaid = +(loan.daily_payment * elapsed).toFixed(2);
+  // Day 1 = start_date. Today counts as a full day in the term.
+  const elapsed = today >= loan.start_date
+    ? Math.min(Number(loan.term_days), daysBetween(loan.start_date, today) + 1)
+    : 0;
+  const expectedPaid = +(Number(loan.daily_payment) * elapsed).toFixed(2);
   const arrears = Math.max(0, +(expectedPaid - totalPaid).toFixed(2));
   const percentPaid = loan.total_payable > 0 ? Math.min(100, (totalPaid / loan.total_payable) * 100) : 0;
-  const daysRemaining = Math.max(0, daysBetween(today, loan.end_date));
+  const daysRemaining = Math.max(0, Number(loan.term_days) - elapsed);
   const overdue = today > loan.end_date && balance > 0;
   return { balance, expectedPaid, arrears, percentPaid, daysRemaining, elapsed, overdue };
 }

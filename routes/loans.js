@@ -48,7 +48,8 @@ router.post('/', async (req, res, next) => {
       monthlyRate: monthly_interest_rate || 10
     });
     const sDate = start_date || today();
-    const eDate = addDays(sDate, calc.termDays);
+    // Day 1 = start_date, Day N = start_date + (N-1) days. So end_date = start + termDays - 1.
+    const eDate = addDays(sDate, calc.termDays - 1);
     const info = await db.run(`
       INSERT INTO loans
         (borrower_id, principal, monthly_interest_rate, term_days, start_date, end_date,
@@ -96,7 +97,8 @@ router.get('/:id', async (req, res, next) => {
       dailyPaidByDate[p.payment_date] = (dailyPaidByDate[p.payment_date] || 0) + Number(p.amount);
     });
     for (let i = 0; i < Number(loan.term_days); i++) {
-      const dateStr = addDays(loan.start_date, i + 1);
+      // Day 1 = start_date itself; Day N = start_date + (N-1) days.
+      const dateStr = addDays(loan.start_date, i);
       schedule.push({
         day: i + 1,
         date: dateStr,
