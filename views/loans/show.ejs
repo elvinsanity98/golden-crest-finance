@@ -61,7 +61,11 @@
     <div class="h-full bg-gradient-to-r from-brand-400 to-brand-600 rounded-full transition-all" style="width: <%= progress.percentPaid %>%"></div>
   </div>
   <div class="grid grid-cols-3 gap-2 mt-4 text-center text-xs">
-    <div><div class="font-bold text-slate-900">Day <%= progress.elapsed %> / <%= loan.term_days %></div><div class="text-slate-500">Current day</div></div>
+    <% if (progress.scheduled) { %>
+      <div><div class="font-bold text-slate-900">Not started</div><div class="text-slate-500">Starts <%= fmt.date(loan.start_date) %></div></div>
+    <% } else { %>
+      <div><div class="font-bold text-slate-900">Day <%= progress.elapsed %> / <%= loan.term_days %></div><div class="text-slate-500">Current day</div></div>
+    <% } %>
     <div><div class="font-bold text-slate-900"><%= progress.daysRemaining %></div><div class="text-slate-500">Days remaining</div></div>
     <div><div class="font-bold text-slate-900"><%= fmt.money(loan.daily_payment) %></div><div class="text-slate-500">Daily target</div></div>
   </div>
@@ -69,8 +73,17 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-  <!-- Record payment -->
-  <% if (loan.status === 'active') { %>
+  <!-- Record payment / Scheduled notice -->
+  <% if (loan.status === 'active' && progress.scheduled) { %>
+  <div class="lg:col-span-1 bg-blue-50 border-2 border-dashed border-blue-200 rounded-xl p-6 text-center h-fit">
+    <div class="w-12 h-12 mx-auto rounded-full bg-blue-100 text-blue-700 flex items-center justify-center mb-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+    </div>
+    <div class="text-xs font-bold uppercase tracking-wider text-blue-700">Scheduled</div>
+    <div class="mt-1 text-lg font-bold text-slate-900">Starts <%= fmt.date(loan.start_date) %></div>
+    <p class="mt-2 text-sm text-slate-600">No collections can be recorded until the first payment date.</p>
+  </div>
+  <% } else if (loan.status === 'active') { %>
   <div class="lg:col-span-1 bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl shadow-lg p-5 sm:p-6 text-white h-fit">
     <div class="text-xs font-bold uppercase tracking-wider text-brand-300">Record Payment</div>
     <h3 class="text-lg font-bold mt-1 mb-4">Daily Collection</h3>

@@ -39,8 +39,14 @@
               <td class="px-5 py-3 text-right font-bold <%= l.progress.balance > 0 ? 'text-slate-900' : 'text-emerald-600' %>"><%= fmt.money(l.progress.balance) %></td>
               <td class="px-5 py-3 text-xs text-slate-500"><%= fmt.date(l.start_date) %><br>→ <%= fmt.date(l.end_date) %></td>
               <td class="px-5 py-3 text-center">
-                <% if (l.status === 'active') { %>
-                  <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded <%= l.progress.overdue ? 'bg-red-100 text-red-700' : (l.progress.arrears > 0 ? 'bg-amber-100 text-amber-700' : 'bg-brand-100 text-brand-800') %>"><%= l.progress.overdue ? 'Overdue' : (l.progress.arrears > 0 ? 'Arrears' : 'Active') %></span>
+                <% if (l.status === 'active') {
+                     var s, c;
+                     if (l.progress.scheduled) { s = 'Scheduled'; c = 'bg-blue-100 text-blue-700'; }
+                     else if (l.progress.overdue) { s = 'Overdue'; c = 'bg-red-100 text-red-700'; }
+                     else if (l.progress.arrears > 0) { s = 'Arrears'; c = 'bg-amber-100 text-amber-700'; }
+                     else { s = 'Active'; c = 'bg-brand-100 text-brand-800'; }
+                %>
+                  <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded <%= c %>"><%= s %></span>
                 <% } else if (l.status === 'completed') { %>
                   <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">Paid</span>
                 <% } else { %>
@@ -62,8 +68,14 @@
             </div>
             <div class="text-xs text-slate-500 mt-1 flex items-center justify-between">
               <span>#<%= l.id %> · daily <%= fmt.money(l.daily_payment) %></span>
-              <% if (l.status === 'active') { %>
-                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded <%= l.progress.overdue ? 'bg-red-100 text-red-700' : (l.progress.arrears > 0 ? 'bg-amber-100 text-amber-700' : 'bg-brand-100 text-brand-800') %>"><%= l.progress.overdue ? 'Overdue' : (l.progress.arrears > 0 ? 'Arrears' : 'Active') %></span>
+              <% if (l.status === 'active') {
+                   var ms, mc;
+                   if (l.progress.scheduled) { ms = 'Scheduled'; mc = 'bg-blue-100 text-blue-700'; }
+                   else if (l.progress.overdue) { ms = 'Overdue'; mc = 'bg-red-100 text-red-700'; }
+                   else if (l.progress.arrears > 0) { ms = 'Arrears'; mc = 'bg-amber-100 text-amber-700'; }
+                   else { ms = 'Active'; mc = 'bg-brand-100 text-brand-800'; }
+              %>
+                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded <%= mc %>"><%= ms %></span>
               <% } else if (l.status === 'completed') { %>
                 <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">Paid</span>
               <% } else { %>

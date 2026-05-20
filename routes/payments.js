@@ -33,11 +33,22 @@ router.post('/', async (req, res, next) => {
       return res.redirect('/loans');
     }
 
+    const todayStr = today();
+    const pDate = payment_date || todayStr;
+    if (pDate < loan.start_date) {
+      req.session.flash = { type: 'error', message: `This loan's first payment date is ${loan.start_date}. Payments can't be recorded earlier.` };
+      return res.redirect(req.get('referer') || `/loans/${loan_id}`);
+    }
+    if (pDate > todayStr) {
+      req.session.flash = { type: 'error', message: 'Payment date cannot be in the future.' };
+      return res.redirect(req.get('referer') || `/loans/${loan_id}`);
+    }
+
     const collector = req.session.user ? req.session.user.fullName : null;
     await db.run(`
       INSERT INTO payments (loan_id, amount, payment_date, method, collected_by, notes)
       VALUES (?, ?, ?, ?, ?, ?)
-    `, [loan_id, Number(amount), payment_date || today(), method || 'cash', collector, notes || null]);
+    `, [loan_id, Number(amount), pDate, method || 'cash', collector, notes || null]);
 
     const totalPaidRow = await db.get('SELECT COALESCE(SUM(amount),0) AS t FROM payments WHERE loan_id = ?', [loan_id]);
     const totalPaid = Number(totalPaidRow.t);
