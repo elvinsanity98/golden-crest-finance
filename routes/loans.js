@@ -106,8 +106,14 @@ router.get('/:id', async (req, res, next) => {
       // Day 1 = start_date itself; Day N = start_date + (N-1) days.
       const dateStr = addDays(loan.start_date, i);
       const todaysPay = dailyPaidByDate[dateStr] || 0;
+      const prevCumExpected = cumExpected; // cumExpected through yesterday
       cumPaid += todaysPay;
       cumExpected += daily;
+      const covered = cumPaid + 0.005 >= cumExpected;
+      // Partial = some credit applied to this day (either an actual payment
+      // recorded today, or surplus rolling forward from earlier days), but
+      // not enough to fully cover today.
+      const partial = !covered && (todaysPay > 0.005 || cumPaid > prevCumExpected + 0.005);
       schedule.push({
         day: i + 1,
         date: dateStr,
@@ -115,7 +121,9 @@ router.get('/:id', async (req, res, next) => {
         paid: todaysPay,
         cumPaid: +cumPaid.toFixed(2),
         cumExpected: +cumExpected.toFixed(2),
-        covered: cumPaid + 0.005 >= cumExpected
+        covered,
+        partial,
+        credit: +Math.max(0, Math.min(daily, cumPaid - prevCumExpected)).toFixed(2)
       });
     }
 

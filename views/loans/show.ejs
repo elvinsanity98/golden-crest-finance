@@ -158,9 +158,11 @@
       <% schedule.forEach(s => {
         var status;
         // Cumulative coverage: a day is paid if total paid through this day
-        // covers total expected — advance payments roll forward.
+        // covers total expected — advance payments roll forward. Partial
+        // catches days that have some credit (either a same-day payment or
+        // a surplus from prior days) but aren't fully covered.
         if (s.covered) status = 'paid';
-        else if (s.paid > 0) status = 'partial';
+        else if (s.partial) status = 'partial';
         else if (s.date < todayStr) status = 'missed';
         else if (s.date === todayStr) status = 'today';
         else status = 'future';
@@ -172,6 +174,9 @@
           future: 'bg-slate-100 text-slate-500'
         })[status];
         var tip = 'Day ' + s.day + ' · ' + s.date + '\nPaid this day: ' + fmt.money(s.paid) + ' of ' + fmt.money(s.expected);
+        if (s.credit !== s.paid) {
+          tip += '\nCredit applied this day: ' + fmt.money(s.credit) + ' of ' + fmt.money(s.expected);
+        }
         if (s.paid !== s.cumPaid) {
           tip += '\nCumulative: ' + fmt.money(s.cumPaid) + ' of ' + fmt.money(s.cumExpected);
         }
