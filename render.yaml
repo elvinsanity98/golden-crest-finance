@@ -1,0 +1,23 @@
+# Render Blueprint - one-click deploy config.
+# See https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: golden-crest-finance
+    env: node
+    plan: free
+    region: oregon   # us-west-2 - matches the Turso DB region for low DB latency
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true   # Render generates a strong random value
+      - key: ADMIN_PASSWORD
+        sync: false           # you'll set this in the Render dashboard
+      - key: DATABASE_URL
+        sync: false           # paste your Turso libsql:// URL in the dashboard
+      - key: DATABASE_AUTH_TOKEN
+        sync: false           # paste your Turso auth token in the dashboard

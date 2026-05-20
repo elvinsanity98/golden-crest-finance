@@ -1,0 +1,70 @@
+<%- include('../partials/page-header', { heading: 'Daily Collections', eyebrow: 'Cash Flow', subtitle: 'View collections for any specific day.' }) %>
+
+<form method="GET" class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4 flex flex-col sm:flex-row sm:items-end gap-3">
+  <div class="flex-1">
+    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Date</label>
+    <input name="date" type="date" value="<%= date %>" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+  </div>
+  <div>
+    <button class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-5 py-2 rounded-lg text-sm w-full sm:w-auto">View</button>
+  </div>
+</form>
+
+<div class="bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl shadow-lg p-5 mb-4 text-slate-900">
+  <div class="text-xs font-bold uppercase tracking-wider opacity-75">Total collected on <%= fmt.date(date) %></div>
+  <div class="mt-1 text-3xl sm:text-4xl font-extrabold"><%= fmt.money(total) %></div>
+  <div class="text-sm opacity-80 mt-1"><%= payments.length %> payment(s) recorded</div>
+</div>
+
+<% if (payments.length === 0) { %>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+    <p class="text-slate-500 text-sm">No payments collected on this date.</p>
+  </div>
+<% } else { %>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div class="hidden md:block overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
+          <tr>
+            <th class="px-5 py-3 text-left">Borrower</th>
+            <th class="px-5 py-3 text-right">Amount</th>
+            <th class="px-5 py-3 text-left">Method</th>
+            <th class="px-5 py-3 text-left">Collected By</th>
+            <th class="px-5 py-3 text-left">Notes</th>
+            <th class="px-5 py-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <% payments.forEach(p => { %>
+            <tr class="hover:bg-slate-50">
+              <td class="px-5 py-3">
+                <a href="/loans/<%= p.loan_id %>" class="font-semibold text-slate-900 hover:text-brand-600"><%= p.borrower_name %></a>
+                <div class="text-xs text-slate-500">Loan #<%= p.loan_id %></div>
+              </td>
+              <td class="px-5 py-3 text-right font-bold text-emerald-600"><%= fmt.money(p.amount) %></td>
+              <td class="px-5 py-3"><span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700"><%= p.method %></span></td>
+              <td class="px-5 py-3 text-slate-600"><%= p.collected_by || '—' %></td>
+              <td class="px-5 py-3 text-slate-600 italic"><%= p.notes || '' %></td>
+              <td class="px-5 py-3 text-right">
+                <form action="/payments/<%= p.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete this payment?');">
+                  <button class="text-xs text-red-600 hover:text-red-700 font-semibold">Delete</button>
+                </form>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <ul class="md:hidden divide-y divide-slate-100">
+      <% payments.forEach(p => { %>
+        <li class="px-4 py-3">
+          <div class="flex items-center justify-between gap-2">
+            <a href="/loans/<%= p.loan_id %>" class="font-semibold text-slate-900 truncate"><%= p.borrower_name %></a>
+            <span class="font-bold text-emerald-600 flex-shrink-0"><%= fmt.money(p.amount) %></span>
+          </div>
+          <div class="text-xs text-slate-500 mt-1"><%= p.method %><% if (p.collected_by) { %> · <%= p.collected_by %><% } %></div>
+        </li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>

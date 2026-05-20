@@ -1,0 +1,26 @@
+{
+  "name": "golden-crest-finance",
+  "version": "1.0.0",
+  "description": "Golden Crest Finance - Modern lending management web app. Owned by Marvin Trinidad. Developed by TG Devworks.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node db/seed.js"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "bcryptjs": "^2.4.3",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.18.0",
+    "memorystore": "^1.6.7",
+    "method-override": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "author": "TG Devworks",
+  "license": "MIT"
+}

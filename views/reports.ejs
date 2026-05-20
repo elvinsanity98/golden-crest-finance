@@ -1,0 +1,97 @@
+<%- include('partials/page-header', { heading: 'Reports', eyebrow: 'Analytics', subtitle: 'Collections, portfolio, and performance metrics.' }) %>
+
+<form method="GET" class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+  <div>
+    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">From</label>
+    <input name="from" type="date" value="<%= from %>" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500">
+  </div>
+  <div>
+    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">To</label>
+    <input name="to" type="date" value="<%= to %>" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500">
+  </div>
+  <div class="flex items-end">
+    <button class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold px-5 py-2 rounded-lg text-sm">Apply Filter</button>
+  </div>
+</form>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Principal Disbursed</div>
+    <div class="mt-2 text-2xl font-extrabold text-slate-900"><%= fmt.money(summary.principalDisbursed) %></div>
+    <div class="text-xs text-slate-500"><%= summary.loansCreated %> loans created</div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Collected</div>
+    <div class="mt-2 text-2xl font-extrabold text-emerald-600"><%= fmt.money(summary.totalCollected) %></div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Loans Completed</div>
+    <div class="mt-2 text-2xl font-extrabold text-slate-900"><%= summary.loansCompleted %></div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Outstanding (Active)</div>
+    <div class="mt-2 text-2xl font-extrabold text-slate-900"><%= fmt.money(portfolio.outstanding) %></div>
+    <div class="text-xs <%= portfolio.arrears > 0 ? 'text-red-600 font-semibold' : 'text-slate-500' %>"><%= fmt.money(portfolio.arrears) %> in arrears</div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+    <div class="px-5 py-4 border-b border-slate-200">
+      <h3 class="font-bold text-slate-900">Daily Collections</h3>
+      <p class="text-xs text-slate-500 mt-0.5"><%= fmt.date(from) %> → <%= fmt.date(to) %></p>
+    </div>
+    <% if (collections.length === 0) { %>
+      <div class="p-8 text-center text-slate-500 text-sm">No payments in this period.</div>
+    <% } else { %>
+      <div class="max-h-96 overflow-y-auto">
+        <% const max = Math.max.apply(null, collections.map(c => c.total)) || 1; %>
+        <ul class="divide-y divide-slate-100">
+          <% collections.forEach(c => { %>
+            <li class="px-5 py-3">
+              <div class="flex items-center justify-between mb-1">
+                <a href="/payments?date=<%= c.date %>" class="font-semibold text-sm text-slate-900 hover:text-brand-600"><%= fmt.date(c.date) %></a>
+                <span class="text-sm font-bold text-emerald-600"><%= fmt.money(c.total) %></span>
+              </div>
+              <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full bg-brand-500 rounded-full" style="width: <%= (c.total / max) * 100 %>%"></div>
+              </div>
+              <div class="text-xs text-slate-500 mt-0.5"><%= c.count %> payment(s)</div>
+            </li>
+          <% }); %>
+        </ul>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+    <div class="px-5 py-4 border-b border-slate-200">
+      <h3 class="font-bold text-slate-900">Active Portfolio</h3>
+      <p class="text-xs text-slate-500 mt-0.5"><%= portfolio.activeCount %> active · <%= portfolio.overdueCount %> overdue</p>
+    </div>
+    <% if (activeLoans.length === 0) { %>
+      <div class="p-8 text-center text-slate-500 text-sm">No active loans.</div>
+    <% } else { %>
+      <div class="max-h-96 overflow-y-auto">
+        <ul class="divide-y divide-slate-100">
+          <% activeLoans.sort((a,b) => b.progress.arrears - a.progress.arrears).forEach(l => { %>
+            <li class="px-5 py-3">
+              <div class="flex items-center justify-between gap-2">
+                <a href="/loans/<%= l.id %>" class="font-semibold text-sm text-slate-900 hover:text-brand-600 truncate"><%= l.borrower_name %></a>
+                <span class="text-sm font-bold flex-shrink-0"><%= fmt.money(l.progress.balance) %></span>
+              </div>
+              <div class="flex items-center justify-between text-xs mt-0.5">
+                <span class="text-slate-500">Daily <%= fmt.money(l.daily_payment) %></span>
+                <% if (l.progress.arrears > 0) { %>
+                  <span class="text-red-600 font-bold">-<%= fmt.money(l.progress.arrears) %></span>
+                <% } else { %>
+                  <span class="text-emerald-600 font-semibold">On track</span>
+                <% } %>
+              </div>
+            </li>
+          <% }); %>
+        </ul>
+      </div>
+    <% } %>
+  </div>
+</div>

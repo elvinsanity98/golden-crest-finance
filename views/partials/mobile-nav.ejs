@@ -1,0 +1,22 @@
+<% if (typeof currentUser !== 'undefined' && currentUser) {
+  const items = [
+    { href: '/', label: 'Home', icon: 'M3 12l9-9 9 9M5 10v10h14V10' },
+    { href: '/borrowers', label: 'Borrowers', icon: 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5a4 4 0 11-8 0 4 4 0 018 0zm6 0a4 4 0 11-8 0 4 4 0 018 0z' },
+    { href: '/loans', label: 'Loans', icon: 'M3 10h18M3 6h18M3 14h18M3 18h18' },
+    { href: '/payments', label: 'Collect', icon: 'M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3 1.343 3 3-1.343 3-3 3m0-12v12m0 0V4m0 16v-4' },
+    { href: '/calculator', label: 'Calc', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' }
+  ];
+%>
+<nav class="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-30 shadow-lg">
+  <div class="grid grid-cols-5">
+    <% items.forEach(item => {
+       const isActive = item.href === '/' ? path === '/' : path.indexOf(item.href) === 0;
+    %>
+      <a href="<%= item.href %>" class="flex flex-col items-center justify-center py-2 text-[10px] font-medium <%= isActive ? 'text-brand-600' : 'text-slate-500' %>">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="<%= item.icon %>"/></svg>
+        <%= item.label %>
+      </a>
+    <% }); %>
+  </div>
+</nav>
+<% } %>

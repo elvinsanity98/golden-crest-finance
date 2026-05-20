@@ -1,0 +1,81 @@
+<%- include('../partials/page-header', { heading: 'Loans', eyebrow: 'Portfolio', subtitle: 'All loans tracked by status.', actions: '<a href="/loans/new" class="bg-brand-500 hover:bg-brand-400 text-slate-900 font-semibold px-4 py-2 rounded-lg text-sm shadow">+ New Loan</a>' }) %>
+
+<div class="flex gap-2 mb-4 overflow-x-auto pb-1">
+  <% const tabs = [['active','Active'],['completed','Paid'],['defaulted','Defaulted'],['all','All']]; %>
+  <% tabs.forEach(([k, label]) => { %>
+    <a href="/loans?status=<%= k %>" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap <%= status === k ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50' %>"><%= label %></a>
+  <% }); %>
+</div>
+
+<% if (loans.length === 0) { %>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+    <p class="text-slate-500 text-sm">No loans found.</p>
+  </div>
+<% } else { %>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div class="hidden md:block overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
+          <tr>
+            <th class="px-5 py-3 text-left">Borrower</th>
+            <th class="px-5 py-3 text-right">Principal</th>
+            <th class="px-5 py-3 text-right">Total Payable</th>
+            <th class="px-5 py-3 text-right">Daily</th>
+            <th class="px-5 py-3 text-right">Balance</th>
+            <th class="px-5 py-3 text-left">Term</th>
+            <th class="px-5 py-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <% loans.forEach(l => { %>
+            <tr class="hover:bg-slate-50 cursor-pointer" onclick="location.href='/loans/<%= l.id %>'">
+              <td class="px-5 py-3">
+                <div class="font-semibold text-slate-900"><%= l.borrower_name %></div>
+                <div class="text-xs text-slate-500">Loan #<%= l.id %></div>
+              </td>
+              <td class="px-5 py-3 text-right font-medium"><%= fmt.money(l.principal) %></td>
+              <td class="px-5 py-3 text-right font-medium"><%= fmt.money(l.total_payable) %></td>
+              <td class="px-5 py-3 text-right font-medium"><%= fmt.money(l.daily_payment) %></td>
+              <td class="px-5 py-3 text-right font-bold <%= l.progress.balance > 0 ? 'text-slate-900' : 'text-emerald-600' %>"><%= fmt.money(l.progress.balance) %></td>
+              <td class="px-5 py-3 text-xs text-slate-500"><%= fmt.date(l.start_date) %><br>→ <%= fmt.date(l.end_date) %></td>
+              <td class="px-5 py-3 text-center">
+                <% if (l.status === 'active') { %>
+                  <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded <%= l.progress.overdue ? 'bg-red-100 text-red-700' : (l.progress.arrears > 0 ? 'bg-amber-100 text-amber-700' : 'bg-brand-100 text-brand-800') %>"><%= l.progress.overdue ? 'Overdue' : (l.progress.arrears > 0 ? 'Arrears' : 'Active') %></span>
+                <% } else if (l.status === 'completed') { %>
+                  <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">Paid</span>
+                <% } else { %>
+                  <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-200 text-slate-700"><%= l.status %></span>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <ul class="md:hidden divide-y divide-slate-100">
+      <% loans.forEach(l => { %>
+        <li>
+          <a href="/loans/<%= l.id %>" class="block px-4 py-3 hover:bg-slate-50">
+            <div class="flex items-center justify-between gap-2">
+              <div class="font-semibold text-slate-900 truncate"><%= l.borrower_name %></div>
+              <span class="text-sm font-bold"><%= fmt.money(l.progress.balance) %></span>
+            </div>
+            <div class="text-xs text-slate-500 mt-1 flex items-center justify-between">
+              <span>#<%= l.id %> · daily <%= fmt.money(l.daily_payment) %></span>
+              <% if (l.status === 'active') { %>
+                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded <%= l.progress.overdue ? 'bg-red-100 text-red-700' : (l.progress.arrears > 0 ? 'bg-amber-100 text-amber-700' : 'bg-brand-100 text-brand-800') %>"><%= l.progress.overdue ? 'Overdue' : (l.progress.arrears > 0 ? 'Arrears' : 'Active') %></span>
+              <% } else if (l.status === 'completed') { %>
+                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">Paid</span>
+              <% } else { %>
+                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-200 text-slate-700"><%= l.status %></span>
+              <% } %>
+            </div>
+            <div class="mt-2 h-1 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-brand-500" style="width: <%= l.progress.percentPaid %>%"></div>
+            </div>
+          </a>
+        </li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>

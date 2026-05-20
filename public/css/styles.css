@@ -1,0 +1,39 @@
+/* Custom additions on top of Tailwind */
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Smooth iOS-style scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide horizontal scrollbars on tab strips */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 4px;
+}
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 4px;
+}
+
+/* Print-friendly receipts */
+@media print {
+  header, aside, nav, footer, form, button { display: none !important; }
+  main { margin: 0 !important; padding: 0 !important; }
+  body { background: white !important; }
+}
+
+/* Subtle entrance animation for cards */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+main > * {
+  animation: fadeUp 0.25s ease-out;
+}

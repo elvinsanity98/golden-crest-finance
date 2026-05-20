@@ -1,0 +1,133 @@
+<%- include('partials/page-header', { heading: 'Dashboard', eyebrow: 'Overview', subtitle: 'Today at a glance — collections, arrears, and active portfolio.', actions: '<a href="/loans/new" class="bg-brand-500 hover:bg-brand-400 text-slate-900 font-semibold px-4 py-2 rounded-lg text-sm shadow">+ New Loan</a><a href="/borrowers/new" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-4 py-2 rounded-lg text-sm">+ Borrower</a>' }) %>
+
+<!-- KPI cards -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Collected today</div>
+    <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900"><%= fmt.money(totals.collectedToday) %></div>
+    <div class="mt-1 text-xs text-slate-500"><%= totals.paymentsToday %> payment(s)</div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Expected today</div>
+    <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900"><%= fmt.money(expectedToday) %></div>
+    <div class="mt-1 text-xs <%= totals.collectedToday >= expectedToday ? 'text-emerald-600' : 'text-amber-600' %>">
+      <%= expectedToday > 0 ? ((totals.collectedToday/expectedToday)*100).toFixed(0) : 0 %>% collected
+    </div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Outstanding</div>
+    <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900"><%= fmt.money(outstanding) %></div>
+    <div class="mt-1 text-xs text-slate-500"><%= totals.activeLoans %> active loans</div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Arrears</div>
+    <div class="mt-2 text-2xl sm:text-3xl font-extrabold <%= arrearsTotal > 0 ? 'text-red-600' : 'text-emerald-600' %>"><%= fmt.money(arrearsTotal) %></div>
+    <div class="mt-1 text-xs <%= overdueCount > 0 ? 'text-red-600' : 'text-slate-500' %>"><%= overdueCount %> overdue</div>
+  </div>
+</div>
+
+<!-- Quick payment widget -->
+<div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl shadow-lg p-5 sm:p-6 mb-6 text-white">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+    <div>
+      <div class="text-xs font-bold uppercase tracking-wider text-brand-300">Quick Action</div>
+      <h2 class="text-xl font-bold mt-1">Record a Collection</h2>
+    </div>
+    <a href="/payments" class="text-xs text-brand-300 hover:text-brand-200 font-semibold">View all collections →</a>
+  </div>
+
+  <% if (dueToday.length === 0) { %>
+    <p class="text-sm text-slate-400">No active loans scheduled for today. Create a loan to get started.</p>
+  <% } else { %>
+    <form action="/payments" method="POST" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+      <div class="sm:col-span-2">
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Loan</label>
+        <select name="loan_id" required class="w-full rounded-lg bg-slate-700 border border-slate-600 text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+          <% dueToday.forEach(l => { %>
+            <option value="<%= l.id %>" data-daily="<%= l.daily_payment %>">
+              <%= l.borrower_name %> · #<%= l.id %> · daily <%= fmt.money(l.daily_payment) %><%= l.progress.arrears > 0 ? ' · ARREARS ' + fmt.money(l.progress.arrears) : '' %>
+            </option>
+          <% }); %>
+        </select>
+      </div>
+      <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Amount</label>
+        <input name="amount" id="quickAmount" type="number" step="0.01" min="0.01" required value="<%= dueToday[0].daily_payment %>" class="w-full rounded-lg bg-slate-700 border border-slate-600 text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+      </div>
+      <div class="flex items-end">
+        <button class="w-full bg-brand-500 hover:bg-brand-400 text-slate-900 font-bold py-2 rounded-lg shadow text-sm">Record Payment</button>
+      </div>
+      <input type="hidden" name="payment_date" value="<%= fmt.today() %>">
+      <input type="hidden" name="method" value="cash">
+    </form>
+    <script>
+      document.querySelector('select[name="loan_id"]').addEventListener('change', function(e) {
+        var daily = e.target.options[e.target.selectedIndex].getAttribute('data-daily');
+        if (daily) document.getElementById('quickAmount').value = daily;
+      });
+    </script>
+  <% } %>
+</div>
+
+<!-- Two columns -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+
+  <!-- Due today -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 lg:col-span-2">
+    <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+      <h3 class="font-bold text-slate-900">Loans due for collection today</h3>
+      <a href="/loans" class="text-xs text-brand-600 font-semibold hover:underline">All loans →</a>
+    </div>
+    <% if (dueToday.length === 0) { %>
+      <div class="p-8 text-center text-slate-500 text-sm">No loans scheduled today.</div>
+    <% } else { %>
+      <ul class="divide-y divide-slate-100">
+        <% dueToday.forEach(l => { %>
+          <li class="px-5 py-3 flex items-center gap-3 hover:bg-slate-50">
+            <div class="w-10 h-10 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-bold flex-shrink-0">
+              <%= l.borrower_name.charAt(0).toUpperCase() %>
+            </div>
+            <div class="flex-1 min-w-0">
+              <a href="/loans/<%= l.id %>" class="font-semibold text-slate-900 hover:text-brand-600 truncate block"><%= l.borrower_name %></a>
+              <div class="text-xs text-slate-500">
+                Daily <%= fmt.money(l.daily_payment) %> · Bal <%= fmt.money(l.progress.balance) %>
+                <% if (l.progress.arrears > 0) { %><span class="text-red-600 font-semibold">· -<%= fmt.money(l.progress.arrears) %></span><% } %>
+              </div>
+            </div>
+            <div class="text-right">
+              <% if (l.progress.overdue) { %>
+                <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-red-100 text-red-700">Overdue</span>
+              <% } else if (l.progress.arrears > 0) { %>
+                <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-100 text-amber-700">Arrears</span>
+              <% } else { %>
+                <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">On track</span>
+              <% } %>
+            </div>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </div>
+
+  <!-- Recent payments -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+    <div class="px-5 py-4 border-b border-slate-200">
+      <h3 class="font-bold text-slate-900">Recent collections</h3>
+    </div>
+    <% if (recentPayments.length === 0) { %>
+      <div class="p-8 text-center text-slate-500 text-sm">No payments recorded yet.</div>
+    <% } else { %>
+      <ul class="divide-y divide-slate-100">
+        <% recentPayments.forEach(p => { %>
+          <li class="px-5 py-3">
+            <div class="flex items-center justify-between gap-2">
+              <a href="/loans/<%= p.loan_id %>" class="font-semibold text-sm text-slate-900 hover:text-brand-600 truncate"><%= p.borrower_name %></a>
+              <span class="text-sm font-bold text-emerald-600 flex-shrink-0"><%= fmt.money(p.amount) %></span>
+            </div>
+            <div class="text-xs text-slate-500 mt-0.5"><%= fmt.date(p.payment_date) %> · <%= p.method %></div>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+  </div>
+</div>

@@ -1,0 +1,14 @@
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+  <div>
+    <% if (typeof eyebrow !== 'undefined' && eyebrow) { %>
+      <div class="text-xs font-bold uppercase tracking-wider text-brand-600"><%= eyebrow %></div>
+    <% } %>
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900"><%= heading %></h1>
+    <% if (typeof subtitle !== 'undefined' && subtitle) { %>
+      <p class="text-sm text-slate-500 mt-1"><%= subtitle %></p>
+    <% } %>
+  </div>
+  <% if (typeof actions !== 'undefined' && actions) { %>
+    <div class="flex flex-wrap gap-2"><%- actions %></div>
+  <% } %>
+</div>

@@ -1,0 +1,53 @@
+<% const nav = [
+  { href: '/', label: 'Dashboard', icon: 'M3 12l9-9 9 9M5 10v10h14V10' },
+  { href: '/borrowers', label: 'Borrowers', icon: 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5a4 4 0 11-8 0 4 4 0 018 0zm6 0a4 4 0 11-8 0 4 4 0 018 0z' },
+  { href: '/loans', label: 'Loans', icon: 'M3 10h18M3 6h18M3 14h18M3 18h18' },
+  { href: '/payments', label: 'Collections', icon: 'M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3 1.343 3 3-1.343 3-3 3m0-12v12m0 0V4m0 16v-4' },
+  { href: '/reports', label: 'Reports', icon: 'M9 17v-6h13M9 17l-4-4m4 4l-4 4M3 3h13v6' },
+  { href: '/calculator', label: 'Calculator', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' }
+]; %>
+
+<aside id="sidebar" class="hidden lg:flex fixed inset-y-0 top-16 left-0 w-64 bg-white border-r border-slate-200 z-20 flex-col">
+  <nav class="flex-1 p-4 space-y-1">
+    <% nav.forEach(item => {
+       const isActive = item.href === '/' ? path === '/' : path.indexOf(item.href) === 0;
+    %>
+      <a href="<%= item.href %>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <%= isActive ? 'bg-brand-500 text-slate-900 shadow-sm' : 'text-slate-700 hover:bg-slate-100' %>">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="<%= item.icon %>"/>
+        </svg>
+        <span><%= item.label %></span>
+      </a>
+    <% }); %>
+  </nav>
+  <div class="p-4 border-t border-slate-200">
+    <div class="rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 p-4 text-slate-900">
+      <div class="text-xs font-bold uppercase tracking-wider opacity-75">Loan Terms</div>
+      <div class="mt-1 text-2xl font-extrabold">10% / month</div>
+      <div class="text-xs opacity-75">Daily collection</div>
+    </div>
+  </div>
+</aside>
+
+<!-- Mobile sidebar drawer -->
+<div id="mobileSidebar" class="fixed inset-0 z-40 hidden lg:hidden">
+  <div class="absolute inset-0 bg-slate-900/60" data-close-sidebar></div>
+  <div class="absolute inset-y-0 left-0 w-72 bg-white shadow-xl flex flex-col">
+    <div class="h-16 px-4 flex items-center justify-between border-b border-slate-200 bg-slate-900 text-white">
+      <span class="font-bold">Menu</span>
+      <button data-close-sidebar class="p-2 rounded hover:bg-slate-800">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+      <% nav.forEach(item => {
+         const isActive = item.href === '/' ? path === '/' : path.indexOf(item.href) === 0;
+      %>
+        <a href="<%= item.href %>" class="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium <%= isActive ? 'bg-brand-500 text-slate-900' : 'text-slate-700 hover:bg-slate-100' %>">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="<%= item.icon %>"/></svg>
+          <span><%= item.label %></span>
+        </a>
+      <% }); %>
+    </nav>
+  </div>
+</div>

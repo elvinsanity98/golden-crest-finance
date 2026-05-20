@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title><%= title ? title + ' · ' : '' %><%= brand.name %></title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '#fffbeb',
+              100: '#fef3c7',
+              200: '#fde68a',
+              300: '#fcd34d',
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+              800: '#92400e',
+              900: '#78350f'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+  <%- include('partials/topbar') %>
+
+  <div class="flex flex-1">
+    <%- include('partials/sidebar') %>
+
+    <main class="flex-1 min-w-0 lg:ml-64 pt-4 pb-24 lg:pb-10 px-4 sm:px-6 lg:px-8">
+      <% if (typeof flash !== 'undefined' && flash) { %>
+        <%- include('partials/flash') %>
+      <% } %>
+      <%- body %>
+      <footer class="mt-16 pt-6 border-t border-slate-200 text-center text-xs text-slate-500">
+        <p>&copy; <%= brand.year %> <span class="font-semibold text-slate-700"><%= brand.name %></span> · Owned by <%= brand.owner %></p>
+        <p class="mt-1">Developed by <a href="#" class="text-brand-600 font-semibold hover:underline"><%= brand.devCredit %></a></p>
+      </footer>
+    </main>
+  </div>
+
+  <%- include('partials/mobile-nav') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
