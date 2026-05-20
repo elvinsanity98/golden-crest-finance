@@ -13,6 +13,14 @@ const cfg = cardCfg[count] || cardCfg[5];
 %>
 
 <style>
+  /* On-screen preview wrapper — handles mobile scaling. */
+  .print-frame {
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem 0;
+    max-width: 100%;
+    overflow-x: hidden; /* prevent the 8.5in sheet from pushing the whole page wider */
+  }
   /* On-screen preview */
   .print-sheet {
     background: white;
@@ -22,6 +30,17 @@ const cfg = cardCfg[count] || cardCfg[5];
     margin: 0 auto;
     box-shadow: 0 4px 16px rgba(0,0,0,0.12);
     box-sizing: border-box;
+    flex-shrink: 0;
+  }
+  /* Mobile: shrink the preview so it fits the screen without horizontal scroll */
+  @media screen and (max-width: 1100px) {
+    .print-sheet { zoom: 0.7; }
+  }
+  @media screen and (max-width: 768px) {
+    .print-sheet { zoom: 0.5; }
+  }
+  @media screen and (max-width: 480px) {
+    .print-sheet { zoom: 0.38; }
   }
   .pay-card {
     border: 2px solid #111;
@@ -103,12 +122,18 @@ const cfg = cardCfg[count] || cardCfg[5];
     html, body { width: auto !important; }
     header, aside, nav, footer, .no-print { display: none !important; }
     main { padding: 0 !important; margin: 0 !important; }
+    .print-frame {
+      display: block !important;
+      padding: 0 !important;
+      overflow: visible !important;
+    }
     .print-sheet {
       width: 100% !important;
       min-height: 0 !important;
       padding: 0 !important;
       margin: 0 !important;
       box-shadow: none !important;
+      zoom: 1 !important;
     }
     .pay-card { background: white !important; }
   }
@@ -122,15 +147,13 @@ const cfg = cardCfg[count] || cardCfg[5];
 
     <div class="space-y-3">
       <% for (let i = 0; i < maxCards; i++) { %>
-        <div class="flex items-center gap-3">
-          <span class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-sm flex-shrink-0">#<%= i + 1 %></span>
-          <select name="b<%= i + 1 %>" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-xs sm:text-sm flex-shrink-0">#<%= i + 1 %></span>
+          <select name="b<%= i + 1 %>" class="flex-1 min-w-0 rounded-lg border border-slate-300 px-2 sm:px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm truncate">
             <option value="">— Skip this slot —</option>
-            <option value="blank" <%= raw[i] === 'blank' ? 'selected' : '' %>>📝 Blank card (owner fills in by hand)</option>
+            <option value="blank" <%= raw[i] === 'blank' ? 'selected' : '' %>>📝 Blank card</option>
             <% borrowers.forEach(b => { %>
-              <option value="<%= b.id %>" <%= String(raw[i]) === String(b.id) ? 'selected' : '' %>>
-                <%= b.full_name %><% if (b.active_loan_id) { %> · Loan #<%= b.active_loan_id %> · daily <%= fmt.money(b.daily_payment) %><% } else { %> · no active loan<% } %>
-              </option>
+              <option value="<%= b.id %>" <%= String(raw[i]) === String(b.id) ? 'selected' : '' %>><%= b.full_name %><% if (b.active_loan_id) { %> — ₱<%= Number(b.daily_payment).toFixed(0) %>/day<% } else { %> — no loan<% } %></option>
             <% }); %>
           </select>
         </div>
@@ -161,6 +184,7 @@ const cfg = cardCfg[count] || cardCfg[5];
       </button>
     </div>
 
+    <div class="print-frame">
     <div class="print-sheet" style="display: grid; grid-template-rows: repeat(<%= count %>, 1fr); gap: 0.12in;">
       <% slots.forEach(s => {
         const isBlank = s.kind === 'blank';
@@ -226,6 +250,7 @@ const cfg = cardCfg[count] || cardCfg[5];
           </table>
         </div>
       <% }); %>
+    </div>
     </div>
   <% } %>
 <% } %>
