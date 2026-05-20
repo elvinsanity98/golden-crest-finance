@@ -1,30 +1,57 @@
 # Golden Crest Finance
 
-A modern lending management web app — track borrowers, originate loans, and record daily collections.
+> A modern lending management web app for small Filipino lenders — **10% monthly interest, daily collection**, mobile-first, with printable payment cards.
+
+[![Live · Vercel](https://img.shields.io/badge/Live-Vercel-black?logo=vercel)](https://golden-crest-finance.vercel.app)
+[![Live · Render](https://img.shields.io/badge/Live-Render-blueviolet?logo=render)](https://golden-crest-finance.onrender.com)
+[![Database · Turso](https://img.shields.io/badge/DB-Turso%20(libSQL)-4ff8d2)](https://turso.tech)
 
 **Owned by:** Marvin Trinidad
-**Developed by:** TG Devworks
+**Developed by:** [Marvin's Friend](https://www.facebook.com/elvinsanity98/)
 
 ---
 
 ## Features
 
-- **Dashboard** — today's collections, expected vs collected, outstanding balance, arrears.
-- **Borrowers** — full directory with search and per-borrower loan history.
-- **Loans** — originate with **10% monthly interest** and **daily collection** schedule auto-computed.
-- **Daily Collections** — quick payment recording with payment method (cash, GCash, Maya, bank).
-- **Visual Schedule** — day-by-day grid showing paid / partial / missed / today / future.
-- **Reports** — date-ranged collection summaries, active portfolio view, arrears tracking.
-- **Loan Calculator** — free public tool. Borrowers can estimate daily payments without login.
-- **Mobile-first** — bottom nav, responsive cards, touch-friendly.
-- **Auto-close** — loans flip to "Paid" automatically when paid off.
+### Lending core
+- **Dashboard** — today's collections, expected vs collected, outstanding portfolio, arrears, quick-pay widget for any active loan.
+- **Borrowers** — searchable directory, full contact/ID info, per-borrower loan history.
+- **Loans** — 10% monthly interest, daily collection, auto-computed term schedule, live preview when creating.
+- **Daily Collections** — record payments by cash, GCash, Maya, or bank transfer; view all payments for any date.
+- **Reports** — date-ranged collection summaries, active portfolio overview, arrears tracker.
+
+### Schedule intelligence
+- **Day 1 = First Payment Date** — the day the loan is disbursed *is* the day of the first payment (matches Filipino daily-collection convention).
+- **Visual ledger grid** — every day of the loan term colored 🟢 Paid / 🟡 Partial / 🔴 Missed / 🟧 Today / ⬜ Future.
+- **Advance payment support** — if a client pays 2× or 5× or even the whole loan on Day 1, the grid intelligently rolls forward the surplus (cumulative coverage logic). Any amount works — multiples, odd amounts, even just ₱1 surplus.
+- **Scheduled loans** — if you create a loan with a future start date, the system marks it 🔵 Scheduled and *blocks payments* until the actual first-payment date.
+- **Auto-close** — loans flip to "Paid" the moment total payments ≥ total payable, even from one big payment.
+
+### Helpers
+- **Loan calculator** — public, no login required. Borrowers can estimate daily payments themselves at [`/calculator`](https://golden-crest-finance.vercel.app/calculator).
+- **Printable payment cards** — generate physical ledger cards (1–5 per Letter bond paper) for clients to keep their own payment record on. Auto-fills name, address, daily amount, due date, card #, today's date. Blank cards available too.
+
+### Platform niceties
+- **Mobile-first** — sticky top bar, slide-out sidebar drawer, bottom tab nav, all forms touch-sized.
+- **Asia/Manila timezone** throughout (no UTC mix-ups around midnight).
+- **Auth** — bcrypt-hashed passwords, signed cookie sessions (stateless, works on serverless cold starts).
+- **Currency** — ₱ Peso formatted with `en-PH` locale.
+
+---
 
 ## Tech Stack
 
-- **Node.js** + **Express**
-- **EJS** + **Tailwind CSS** (mobile-friendly)
-- **libSQL / Turso** (cloud-managed SQLite) in production, local SQLite file in dev
-- **express-session** + **bcryptjs**
+| Layer | Choice | Why |
+|---|---|---|
+| Runtime | **Node.js 20+** + **Express 4** | Familiar, mature, easy hire-anyone |
+| Templating | **EJS** + **express-ejs-layouts** | Server-rendered, fast, no SPA churn |
+| Styling | **Tailwind CSS** (Play CDN) | Zero-build, mobile-first utilities |
+| Database | **Turso** (libSQL — SQLite-compatible cloud) | Free tier (9 GB storage), durable, swap to local file with one env var |
+| Sessions | **cookie-session** (signed, stateless) | Survives serverless cold starts |
+| Auth | **bcryptjs** | Pure JS, no native compile on Windows/Vercel |
+| Hosting | **Vercel** + **Render** | Both free tiers, deployed via `vercel.json` and `render.yaml` |
+
+---
 
 ## Local Quick Start
 
@@ -35,104 +62,144 @@ npm start
 
 Runs at <http://localhost:3000>. Default login: `admin` / `admin123`.
 
-A local SQLite file is created at `./data/gcfinance.sqlite` automatically.
+Without `DATABASE_URL` set, the app falls back to a local SQLite file at `./data/gcfinance.sqlite` — perfect for development.
 
 ---
 
-## Free Deployment — Turso + Render
+## Free Deployment
 
-This app deploys to free tiers in about 10 minutes.
+This app is deployed live on **both Vercel and Render**, both pointing at the same **Turso** database so the data stays in sync across them.
 
-### Step 1 — Push your code to GitHub
+### Step 1 — Free Turso database
 
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
-gh repo create golden-crest-finance --public --source=. --push
+turso auth login
+turso db create golden-crest
+turso db show golden-crest --url        # → libsql://golden-crest-<you>.turso.io
+turso db tokens create golden-crest     # → long auth token; copy it
 ```
 
-(If you don't use the `gh` CLI, just create an empty repo on github.com and `git remote add origin ... && git push -u origin main`.)
+Free tier gives you **9 GB storage** and **1B row reads/month** — way more than this app will ever use.
 
-### Step 2 — Create a free Turso database
+### Step 2 — Deploy to Vercel
 
-1. Sign up at <https://turso.tech> (GitHub login works).
-2. Install the Turso CLI: <https://docs.turso.tech/cli/installation>
-3. From any terminal:
-   ```bash
-   turso auth login
-   turso db create golden-crest
-   turso db show golden-crest --url       # → libsql://golden-crest-<you>.turso.io
-   turso db tokens create golden-crest    # → long auth token; copy it
-   ```
-   Free tier gives you **9 GB storage** and **1 billion row reads/month** — far beyond what this app needs.
+1. Sign in at [vercel.com](https://vercel.com), Import the GitHub repo.
+2. Vercel auto-detects `vercel.json` and bundles the Express app via `api/index.js`.
+3. Add three Environment Variables (Settings → Environment Variables):
+   - `DATABASE_URL` — `libsql://golden-crest-<you>.turso.io`
+   - `DATABASE_AUTH_TOKEN` — Turso token
+   - `SESSION_SECRET` — long random string (`node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`)
+4. Redeploy. Lives at `https://<project>.vercel.app`.
 
-### Step 3 — Deploy to Render
+### Step 3 — Deploy to Render (optional, second URL)
 
-1. Sign up at <https://render.com> (GitHub login works).
-2. Click **New → Blueprint**, point it at your GitHub repo. Render reads `render.yaml` and proposes a service.
-3. When prompted for env vars, fill in:
-   - `DATABASE_URL` = `libsql://golden-crest-<you>.turso.io` (from Step 2)
-   - `DATABASE_AUTH_TOKEN` = `<the token from Step 2>`
-   - `ADMIN_PASSWORD` = your chosen admin password
-   (`SESSION_SECRET` is auto-generated, `NODE_ENV` is auto-set.)
-4. Click **Apply**. First build takes ~2 min. Render gives you a `https://golden-crest-finance.onrender.com` URL.
-5. Open the URL and log in as `admin` with your `ADMIN_PASSWORD`.
+1. Sign in at [render.com](https://render.com), New → Blueprint → pick the repo.
+2. Render reads `render.yaml`. Fill in the same `DATABASE_URL`, `DATABASE_AUTH_TOKEN`, and `ADMIN_PASSWORD` env vars when prompted.
+3. Apply. Lives at `https://<service>.onrender.com`. (Free tier sleeps after 15 min idle; cold-wake adds ~30s.)
 
-**Note:** Render's free Web Service sleeps after 15 min of inactivity. The first request after waking takes ~30s — fine for an internal tool, not a high-traffic site. Upgrade to the $7/mo Starter plan to keep it warm.
+### Step 4 — Done
 
-### Don't want to use the Blueprint?
-
-You can also create the service manually on Render:
-- **Build command:** `npm install`
-- **Start command:** `npm start`
-- **Environment:** add the four env vars above, plus `NODE_ENV=production`.
+Both URLs read/write to the same Turso DB. Changes in one show up immediately on the other.
 
 ---
 
 ## Loan Math
 
-For each loan:
-
-- **Interest** = Principal × monthly rate × (term days / 30)
-- **Total Payable** = Principal + Interest
-- **Daily Payment** = Total Payable ÷ term days
-
-Example: ₱10,000 for 30 days @ 10% / month → ₱1,000 interest → ₱11,000 total → **₱366.67/day**.
-
-## Project Structure
+For every loan:
 
 ```
-server.js              Express entrypoint
-db/database.js         libSQL client + schema + async helpers
-db/seed.js             Creates default admin on first boot
-helpers/calc.js        Loan math
-helpers/format.js      Currency & date formatting
-middleware/auth.js     Login guard
-routes/*               All HTTP routes
-views/*                EJS templates
-public/*               CSS + JS
-render.yaml            Render Blueprint config
-.env.example           Env var template
+interest      = principal × monthly_rate × (term_days / 30)
+total_payable = principal + interest
+daily_payment = total_payable / term_days
+end_date      = start_date + term_days − 1     # inclusive, Day 1 = start_date
 ```
+
+**Example** — ₱10,000 over 60 days at 10% / month:
+- Interest = 10,000 × 0.10 × (60/30) = ₱2,000
+- Total payable = ₱12,000
+- Daily payment = ₱200/day
+- Term: Day 1 (start_date) → Day 60 (start_date + 59 days)
+
+---
 
 ## Environment Variables
 
 | Variable | Required | Notes |
 |---|---|---|
-| `DATABASE_URL` | prod | `libsql://<your-db>.turso.io` — leave empty for local file |
-| `DATABASE_AUTH_TOKEN` | prod | from `turso db tokens create` |
-| `SESSION_SECRET` | yes | long random string; Render generates one |
-| `ADMIN_PASSWORD` | first boot | initial admin password (only used when seeding) |
-| `NODE_ENV` | prod | set to `production` for secure cookies |
-| `PORT` | no | host sets this automatically; defaults to 3000 |
-
-## Common Operations
-
-- **Change the admin password:** log into the host (or connect to Turso with `turso db shell golden-crest`) and update `users.password_hash`. Or delete the row and restart — it will re-seed using `ADMIN_PASSWORD`.
-- **Back up the database:** `turso db shell golden-crest .dump > backup.sql`
-- **Reset locally:** delete the `./data/` folder.
+| `DATABASE_URL` | prod only | `libsql://…` — leave empty for local dev fallback |
+| `DATABASE_AUTH_TOKEN` | prod only | from `turso db tokens create` |
+| `SESSION_SECRET` | yes (any env) | long random hex string; sign cookies |
+| `ADMIN_PASSWORD` | first boot only | initial admin password when DB is seeded |
+| `NODE_ENV` | prod | set to `production` to enable HTTPS-only cookies |
+| `PORT` | optional | host sets this automatically; defaults to 3000 |
 
 ---
 
-&copy; Golden Crest Finance · Built with care by **TG Devworks**.
+## Project Structure
+
+```
+server.js              Local-dev entrypoint (just calls app.listen)
+app.js                 Express app — also imported by api/index.js for Vercel
+api/index.js           Vercel serverless entry (re-exports app.js)
+vercel.json            Vercel rewrites + function bundle config
+render.yaml            Render Blueprint config
+
+db/database.js         libSQL client + schema init + sync wrapper helpers
+db/seed.js             Idempotent admin user seeding
+
+helpers/calc.js        Loan math + day-progress logic
+helpers/format.js      ₱, dates, Manila timezone
+
+middleware/auth.js     Login guard, flash messages
+
+routes/auth.js         Login / logout
+routes/dashboard.js    Home dashboard
+routes/borrowers.js    Borrower CRUD
+routes/loans.js        Loan CRUD + show with daily schedule grid
+routes/payments.js     Record / delete payments
+routes/calculator.js   Public loan calculator
+routes/reports.js      Date-ranged reports
+routes/print.js        Printable payment cards (1–5 per Letter page)
+
+views/                 EJS templates (login, dashboard, CRUD pages, print sheet)
+public/                CSS + JS for the browser
+```
+
+---
+
+## Common Operations
+
+**Change the admin password:**
+
+```bash
+# 1. Generate a bcrypt hash
+node -e "console.log(require('bcryptjs').hashSync('YourNewPassword', 10))"
+
+# 2. Connect to Turso shell and update
+turso db shell golden-crest
+> UPDATE users SET password_hash = '<the-hash>' WHERE username = 'admin';
+> .quit
+```
+
+The change takes effect on the next login attempt — no redeploy needed.
+
+**Back up the database:**
+
+```bash
+turso db shell golden-crest .dump > backup-$(date +%Y-%m-%d).sql
+```
+
+**Wipe local dev data:** delete the `./data/` folder.
+
+---
+
+## Security Notes
+
+- Rotate Turso tokens if they ever leak: `turso db tokens invalidate <name> && turso db tokens create <name>`
+- The `admin/admin123` default exists *only on first DB seed*. Always set `ADMIN_PASSWORD` env var before first boot in production, or change the password immediately after.
+- Sessions are cookie-based and signed with `SESSION_SECRET` — never commit that secret.
+- Tailwind via CDN is fine for now; for production-grade, swap to a built `tailwind.css`.
+
+---
+
+&copy; Golden Crest Finance · Owned by Marvin Trinidad · Built with care by [Marvin's Friend](https://www.facebook.com/elvinsanity98/) ❤️
