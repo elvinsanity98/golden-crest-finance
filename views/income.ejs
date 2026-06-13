@@ -1,0 +1,190 @@
+<%- include('partials/page-header', { heading: 'Income', eyebrow: 'Profit & Earnings', subtitle: 'How much the business has earned from interest. Income is recognized as payments are collected.' }) %>
+
+<!-- Headline income cards -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+  <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl shadow-lg p-4 text-white">
+    <div class="text-xs font-bold uppercase tracking-wider opacity-80">Realized Income</div>
+    <div class="mt-2 text-2xl sm:text-3xl font-extrabold"><%= fmt.money(totals.realizedAll) %></div>
+    <div class="mt-1 text-xs opacity-80">Interest collected to date</div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Projected Income</div>
+    <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900"><%= fmt.money(totals.projected) %></div>
+    <div class="mt-1 text-xs text-slate-500">If all active + paid loans finish</div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Locked-in</div>
+    <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900"><%= fmt.money(totals.lockedIn) %></div>
+    <div class="mt-1 text-xs text-slate-500">From fully-paid loans</div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Outstanding</div>
+    <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-amber-600"><%= fmt.money(totals.outstandingInterest) %></div>
+    <div class="mt-1 text-xs text-slate-500">Interest still to collect</div>
+  </div>
+</div>
+
+<!-- Capital row -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Principal Disbursed</div>
+    <div class="mt-2 text-xl font-extrabold text-slate-900"><%= fmt.money(totals.principalDisbursed) %></div>
+    <div class="mt-1 text-xs text-slate-500">Total capital lent out (all loans)</div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Principal Recovered</div>
+    <div class="mt-2 text-xl font-extrabold text-slate-900"><%= fmt.money(totals.principalRecovered) %></div>
+    <div class="mt-1 text-xs text-slate-500">Capital returned via collections</div>
+  </div>
+  <div class="bg-slate-900 rounded-xl shadow-sm p-4 text-white">
+    <div class="text-xs font-bold uppercase tracking-wider text-brand-300">Total Cash Collected</div>
+    <div class="mt-2 text-xl font-extrabold"><%= fmt.money(totals.principalRecovered + totals.realizedAll) %></div>
+    <div class="mt-1 text-xs opacity-75">Principal recovered + realized income</div>
+  </div>
+</div>
+
+<!-- Income over time -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+  <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200">
+    <div class="px-5 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <h3 class="font-bold text-slate-900">Income by Month</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Interest earned from payments collected in the selected range.</p>
+      </div>
+      <form method="GET" class="flex items-end gap-2">
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">From</label>
+          <input name="from" type="date" value="<%= from %>" class="rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">To</label>
+          <input name="to" type="date" value="<%= to %>" class="rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-500">
+        </div>
+        <button class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-3 py-1.5 rounded-lg text-sm">Apply</button>
+      </form>
+    </div>
+
+    <div class="p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Income in range</div>
+          <div class="text-2xl font-extrabold text-emerald-600"><%= fmt.money(periodIncome) %></div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Collected in range</div>
+          <div class="text-lg font-bold text-slate-900"><%= fmt.money(periodCollected) %></div>
+        </div>
+      </div>
+
+      <% if (months.length === 0) { %>
+        <div class="py-8 text-center text-slate-500 text-sm">No income in this period.</div>
+      <% } else { %>
+        <% const maxM = Math.max.apply(null, months.map(m => m.income)) || 1; %>
+        <div class="space-y-2">
+          <% months.forEach(m => { %>
+            <div>
+              <div class="flex items-center justify-between text-sm mb-1">
+                <span class="font-semibold text-slate-700"><%= m.label %></span>
+                <span class="font-bold text-emerald-600"><%= fmt.money(m.income) %></span>
+              </div>
+              <div class="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full" style="width: <%= (m.income / maxM) * 100 %>%"></div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Method explainer -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 h-fit">
+    <h3 class="font-bold text-slate-900 mb-2">How income is counted</h3>
+    <p class="text-sm text-slate-600 leading-relaxed">
+      Each loan's profit is its <strong>interest</strong> — not the principal, which is just capital lent and returned.
+    </p>
+    <p class="text-sm text-slate-600 leading-relaxed mt-2">
+      Every payment is part principal, part interest in the same ratio as the loan. So a loan that is
+      <strong>50% paid</strong> has earned <strong>50% of its interest</strong>.
+    </p>
+    <div class="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-600 space-y-1">
+      <div class="flex justify-between"><span>Realized</span><span class="text-slate-400">collected so far</span></div>
+      <div class="flex justify-between"><span>Projected</span><span class="text-slate-400">if loans finish</span></div>
+      <div class="flex justify-between"><span>Locked-in</span><span class="text-slate-400">already fully paid</span></div>
+      <div class="flex justify-between"><span>Outstanding</span><span class="text-slate-400">still to collect</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Per-loan breakdown -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 mt-6">
+  <div class="px-5 py-4 border-b border-slate-200">
+    <h3 class="font-bold text-slate-900">Income per Loan</h3>
+  </div>
+  <% if (loans.length === 0) { %>
+    <div class="p-8 text-center text-slate-500 text-sm">No loans yet.</div>
+  <% } else { %>
+    <div class="hidden md:block overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
+          <tr>
+            <th class="px-5 py-3 text-left">Borrower</th>
+            <th class="px-5 py-3 text-right">Principal</th>
+            <th class="px-5 py-3 text-right">Interest</th>
+            <th class="px-5 py-3 text-right">Collected</th>
+            <th class="px-5 py-3 text-right">Realized Income</th>
+            <th class="px-5 py-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <% loans.forEach(l => { %>
+            <tr class="hover:bg-slate-50 cursor-pointer" onclick="location.href='/loans/<%= l.id %>'">
+              <td class="px-5 py-3">
+                <div class="font-semibold text-slate-900"><%= l.borrower_name %></div>
+                <div class="text-xs text-slate-500">Loan #<%= l.id %></div>
+              </td>
+              <td class="px-5 py-3 text-right text-slate-600"><%= fmt.money(l.principal) %></td>
+              <td class="px-5 py-3 text-right text-slate-600"><%= fmt.money(l.total_interest) %></td>
+              <td class="px-5 py-3 text-right text-slate-600"><%= fmt.money(l.total_paid) %></td>
+              <td class="px-5 py-3 text-right font-bold text-emerald-600"><%= fmt.money(l.income.realizedInterest) %></td>
+              <td class="px-5 py-3 text-center">
+                <% if (l.status === 'completed') { %>
+                  <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">Paid</span>
+                <% } else if (l.status === 'active') { %>
+                  <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-brand-100 text-brand-800">Active</span>
+                <% } else { %>
+                  <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-200 text-slate-700"><%= l.status %></span>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+        <tfoot class="bg-slate-50 font-bold text-slate-900">
+          <tr>
+            <td class="px-5 py-3">Total</td>
+            <td class="px-5 py-3 text-right"><%= fmt.money(totals.principalDisbursed) %></td>
+            <td class="px-5 py-3 text-right"><%= fmt.money(totals.projected) %></td>
+            <td class="px-5 py-3 text-right"><%= fmt.money(totals.principalRecovered + totals.realizedAll) %></td>
+            <td class="px-5 py-3 text-right text-emerald-600"><%= fmt.money(totals.realizedAll) %></td>
+            <td class="px-5 py-3"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <ul class="md:hidden divide-y divide-slate-100">
+      <% loans.forEach(l => { %>
+        <li>
+          <a href="/loans/<%= l.id %>" class="block px-4 py-3 hover:bg-slate-50">
+            <div class="flex items-center justify-between gap-2">
+              <div class="font-semibold text-slate-900 truncate"><%= l.borrower_name %></div>
+              <span class="text-sm font-bold text-emerald-600"><%= fmt.money(l.income.realizedInterest) %></span>
+            </div>
+            <div class="text-xs text-slate-500 mt-1">
+              #<%= l.id %> · Interest <%= fmt.money(l.total_interest) %> · Collected <%= fmt.money(l.total_paid) %>
+            </div>
+          </a>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
+</div>

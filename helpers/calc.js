@@ -43,4 +43,19 @@ function loanProgress(loan, totalPaid) {
   return { balance, expectedPaid, arrears, percentPaid, daysRemaining, elapsed, overdue, scheduled };
 }
 
-module.exports = { computeLoan, addDays, daysBetween, loanProgress };
+// Lender income for a single loan, recognized on a cash basis.
+// Each peso collected is part principal, part interest in the same ratio as
+// the loan as a whole (interest / total payable). So a loan that is X% paid
+// has earned X% of its interest.
+function loanIncome(loan, totalPaid) {
+  const totalPayable = Number(loan.total_payable) || 0;
+  const totalInterest = Number(loan.total_interest) || 0;
+  const paid = Number(totalPaid) || 0;
+  const interestRatio = totalPayable > 0 ? totalInterest / totalPayable : 0;
+  const realizedInterest = +(paid * interestRatio).toFixed(2);
+  const principalRecovered = +(paid * (1 - interestRatio)).toFixed(2);
+  const outstandingInterest = +Math.max(0, totalInterest - realizedInterest).toFixed(2);
+  return { interestRatio, realizedInterest, principalRecovered, outstandingInterest, totalInterest };
+}
+
+module.exports = { computeLoan, addDays, daysBetween, loanProgress, loanIncome };

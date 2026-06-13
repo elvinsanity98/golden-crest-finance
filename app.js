@@ -20,6 +20,7 @@ const loansRoutes = require('./routes/loans');
 const paymentsRoutes = require('./routes/payments');
 const calculatorRoutes = require('./routes/calculator');
 const reportsRoutes = require('./routes/reports');
+const incomeRoutes = require('./routes/income');
 const printRoutes = require('./routes/print');
 
 const app = express();
@@ -95,6 +96,7 @@ app.use('/borrowers', requireAuth, borrowersRoutes);
 app.use('/loans', requireAuth, loansRoutes);
 app.use('/payments', requireAuth, paymentsRoutes);
 app.use('/reports', requireAuth, reportsRoutes);
+app.use('/income', requireAuth, incomeRoutes);
 app.use('/print', requireAuth, printRoutes);
 
 app.use((req, res) => {
