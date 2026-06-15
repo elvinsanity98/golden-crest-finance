@@ -1,21 +1,74 @@
-<%- include('partials/page-header', { heading: 'Income', eyebrow: 'Profit & Earnings', subtitle: 'How much the business has earned from interest. Income is recognized as payments are collected.' }) %>
+<%
+// --- SVG donut helper (inline, no JS libs) ---
+function donut(segments, opts) {
+  opts = opts || {};
+  const size = opts.size || 132;
+  const stroke = opts.stroke || 18;
+  const r = (size - stroke) / 2;
+  const cx = size / 2, cy = size / 2;
+  const circ = 2 * Math.PI * r;
+  const total = segments.reduce((s, x) => s + Math.max(0, x.value), 0);
+  let offset = 0;
+  let arcs = '';
+  if (total <= 0) {
+    arcs = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="${stroke}"></circle>`;
+  } else {
+    segments.forEach(seg => {
+      const v = Math.max(0, seg.value);
+      if (v <= 0) return;
+      const len = (v / total) * circ;
+      arcs += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="${stroke}" stroke-dasharray="${len.toFixed(2)} ${(circ - len).toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"></circle>`;
+      offset += len;
+    });
+  }
+  return { size, cx, cy, arcs };
+}
+
+const profitTotal = totals.realizedAll + totals.outstandingInterest;
+const profitPct = profitTotal > 0 ? Math.round((totals.realizedAll / profitTotal) * 100) : 0;
+const d1 = donut([
+  { value: totals.realizedAll, color: '#10b981' },
+  { value: totals.outstandingInterest, color: '#e2e8f0' }
+]);
+const d2 = donut([
+  { value: totals.principalRecovered, color: '#0ea5e9' },
+  { value: totals.principalOutstanding, color: '#e2e8f0' },
+  { value: totals.capitalLost, color: '#ef4444' }
+]);
+const qs = 'from=' + encodeURIComponent(from) + '&to=' + encodeURIComponent(to);
+%>
+
+<div class="no-print">
+<%- include('partials/page-header', {
+  heading: 'Income',
+  eyebrow: 'Profit & Earnings',
+  subtitle: 'How much the business has earned from interest. Income is recognized as payments are collected.',
+  actions: '<a href="/income/export.csv?' + qs + '" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2"><svg xmlns=\'http://www.w3.org/2000/svg\' class=\'h-4 w-4\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4\'/></svg>Export CSV</a><button onclick="window.print()" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-4 py-2 rounded-lg text-sm inline-flex items-center gap-2"><svg xmlns=\'http://www.w3.org/2000/svg\' class=\'h-4 w-4\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'currentColor\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z\'/></svg>Print</button>'
+}) %>
+</div>
+
+<!-- Print-only header -->
+<div class="print-only mb-4" style="display:none;">
+  <h1 style="font-size:20px;font-weight:800;color:#1e3a8a;">GOLDEN CREST FINANCE — Income Report</h1>
+  <p style="font-size:12px;color:#475569;">Range: <%= fmt.date(from) %> to <%= fmt.date(to) %> · Generated <%= fmt.date(fmt.today()) %></p>
+</div>
 
 <!-- Headline income cards -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
   <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl shadow-lg p-4 text-white">
     <div class="text-xs font-bold uppercase tracking-wider opacity-80">Realized Income</div>
     <div class="mt-2 text-2xl sm:text-3xl font-extrabold"><%= fmt.money(totals.realizedAll) %></div>
     <div class="mt-1 text-xs opacity-80">Interest collected to date</div>
   </div>
+  <div class="bg-slate-900 rounded-xl shadow-lg p-4 text-white">
+    <div class="text-xs font-bold uppercase tracking-wider text-brand-300">Net Profit</div>
+    <div class="mt-2 text-2xl sm:text-3xl font-extrabold <%= totals.netProfit < 0 ? 'text-red-400' : '' %>"><%= fmt.money(totals.netProfit) %></div>
+    <div class="mt-1 text-xs opacity-75">Realized − capital lost</div>
+  </div>
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
     <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Projected Income</div>
     <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900"><%= fmt.money(totals.projected) %></div>
-    <div class="mt-1 text-xs text-slate-500">If all active + paid loans finish</div>
-  </div>
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Locked-in</div>
-    <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900"><%= fmt.money(totals.lockedIn) %></div>
-    <div class="mt-1 text-xs text-slate-500">From fully-paid loans</div>
+    <div class="mt-1 text-xs text-slate-500">If active + paid loans finish</div>
   </div>
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
     <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Outstanding</div>
@@ -24,107 +77,152 @@
   </div>
 </div>
 
-<!-- Capital row -->
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Principal Disbursed</div>
-    <div class="mt-2 text-xl font-extrabold text-slate-900"><%= fmt.money(totals.principalDisbursed) %></div>
-    <div class="mt-1 text-xs text-slate-500">Total capital lent out (all loans)</div>
-  </div>
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Principal Recovered</div>
-    <div class="mt-2 text-xl font-extrabold text-slate-900"><%= fmt.money(totals.principalRecovered) %></div>
-    <div class="mt-1 text-xs text-slate-500">Capital returned via collections</div>
-  </div>
-  <div class="bg-slate-900 rounded-xl shadow-sm p-4 text-white">
-    <div class="text-xs font-bold uppercase tracking-wider text-brand-300">Total Cash Collected</div>
-    <div class="mt-2 text-xl font-extrabold"><%= fmt.money(totals.principalRecovered + totals.realizedAll) %></div>
-    <div class="mt-1 text-xs opacity-75">Principal recovered + realized income</div>
-  </div>
-</div>
-
-<!-- Income over time -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-  <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200">
-    <div class="px-5 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div>
-        <h3 class="font-bold text-slate-900">Income by Month</h3>
-        <p class="text-xs text-slate-500 mt-0.5">Interest earned from payments collected in the selected range.</p>
+<!-- Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+  <!-- Profit donut -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <h3 class="font-bold text-slate-900 mb-3">Interest earned</h3>
+    <div class="flex items-center gap-4">
+      <div class="relative flex-shrink-0" style="width: <%= d1.size %>px; height: <%= d1.size %>px;">
+        <svg width="<%= d1.size %>" height="<%= d1.size %>" viewBox="0 0 <%= d1.size %> <%= d1.size %>"><%- d1.arcs %></svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <span class="text-2xl font-extrabold text-slate-900"><%= profitPct %>%</span>
+          <span class="text-[10px] uppercase tracking-wider text-slate-400">earned</span>
+        </div>
       </div>
-      <form method="GET" class="flex items-end gap-2">
-        <div>
-          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">From</label>
-          <input name="from" type="date" value="<%= from %>" class="rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-500">
-        </div>
-        <div>
-          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">To</label>
-          <input name="to" type="date" value="<%= to %>" class="rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-500">
-        </div>
-        <button class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-3 py-1.5 rounded-lg text-sm">Apply</button>
-      </form>
+      <ul class="text-sm space-y-2 flex-1 min-w-0">
+        <li class="flex items-center justify-between gap-2">
+          <span class="flex items-center gap-2 text-slate-600"><span class="w-3 h-3 rounded bg-emerald-500"></span>Realized</span>
+          <span class="font-bold text-slate-900"><%= fmt.money(totals.realizedAll) %></span>
+        </li>
+        <li class="flex items-center justify-between gap-2">
+          <span class="flex items-center gap-2 text-slate-600"><span class="w-3 h-3 rounded bg-slate-200"></span>Outstanding</span>
+          <span class="font-bold text-slate-900"><%= fmt.money(totals.outstandingInterest) %></span>
+        </li>
+      </ul>
     </div>
+  </div>
 
-    <div class="p-5">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Income in range</div>
-          <div class="text-2xl font-extrabold text-emerald-600"><%= fmt.money(periodIncome) %></div>
-        </div>
-        <div class="text-right">
-          <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Collected in range</div>
-          <div class="text-lg font-bold text-slate-900"><%= fmt.money(periodCollected) %></div>
-        </div>
+  <!-- Capital donut -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <h3 class="font-bold text-slate-900 mb-3">Capital status</h3>
+    <div class="flex items-center gap-4">
+      <div class="relative flex-shrink-0" style="width: <%= d2.size %>px; height: <%= d2.size %>px;">
+        <svg width="<%= d2.size %>" height="<%= d2.size %>" viewBox="0 0 <%= d2.size %> <%= d2.size %>"><%- d2.arcs %></svg>
       </div>
-
-      <% if (months.length === 0) { %>
-        <div class="py-8 text-center text-slate-500 text-sm">No income in this period.</div>
-      <% } else { %>
-        <% const maxM = Math.max.apply(null, months.map(m => m.income)) || 1; %>
-        <div class="space-y-2">
-          <% months.forEach(m => { %>
-            <div>
-              <div class="flex items-center justify-between text-sm mb-1">
-                <span class="font-semibold text-slate-700"><%= m.label %></span>
-                <span class="font-bold text-emerald-600"><%= fmt.money(m.income) %></span>
-              </div>
-              <div class="h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full" style="width: <%= (m.income / maxM) * 100 %>%"></div>
-              </div>
-            </div>
-          <% }); %>
-        </div>
-      <% } %>
+      <ul class="text-sm space-y-2 flex-1 min-w-0">
+        <li class="flex items-center justify-between gap-2">
+          <span class="flex items-center gap-2 text-slate-600"><span class="w-3 h-3 rounded bg-sky-500"></span>Recovered</span>
+          <span class="font-bold text-slate-900"><%= fmt.money(totals.principalRecovered) %></span>
+        </li>
+        <li class="flex items-center justify-between gap-2">
+          <span class="flex items-center gap-2 text-slate-600"><span class="w-3 h-3 rounded bg-slate-200"></span>Out on loan</span>
+          <span class="font-bold text-slate-900"><%= fmt.money(totals.principalOutstanding) %></span>
+        </li>
+        <li class="flex items-center justify-between gap-2">
+          <span class="flex items-center gap-2 text-slate-600"><span class="w-3 h-3 rounded bg-red-500"></span>Lost (defaults)</span>
+          <span class="font-bold <%= totals.capitalLost > 0 ? 'text-red-600' : 'text-slate-900' %>"><%= fmt.money(totals.capitalLost) %></span>
+        </li>
+      </ul>
     </div>
   </div>
 
   <!-- Method explainer -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 h-fit">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
     <h3 class="font-bold text-slate-900 mb-2">How income is counted</h3>
     <p class="text-sm text-slate-600 leading-relaxed">
-      Each loan's profit is its <strong>interest</strong> — not the principal, which is just capital lent and returned.
+      Profit is a loan's <strong>interest</strong> — not the principal, which is capital lent and returned.
+      Each payment is part principal, part interest in the loan's ratio, so a loan <strong>50% paid</strong> has earned <strong>50% of its interest</strong>.
     </p>
-    <p class="text-sm text-slate-600 leading-relaxed mt-2">
-      Every payment is part principal, part interest in the same ratio as the loan. So a loan that is
-      <strong>50% paid</strong> has earned <strong>50% of its interest</strong>.
-    </p>
-    <div class="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-600 space-y-1">
-      <div class="flex justify-between"><span>Realized</span><span class="text-slate-400">collected so far</span></div>
-      <div class="flex justify-between"><span>Projected</span><span class="text-slate-400">if loans finish</span></div>
-      <div class="flex justify-between"><span>Locked-in</span><span class="text-slate-400">already fully paid</span></div>
-      <div class="flex justify-between"><span>Outstanding</span><span class="text-slate-400">still to collect</span></div>
+    <div class="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-600 space-y-1">
+      <div class="flex justify-between"><span>Net Profit</span><span class="text-slate-400">realized − capital lost</span></div>
+      <div class="flex justify-between"><span>Capital Lost</span><span class="text-slate-400">unrecovered principal on defaults</span></div>
     </div>
   </div>
 </div>
 
+<!-- Capital + defaults row -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Principal Disbursed</div>
+    <div class="mt-2 text-xl font-extrabold text-slate-900"><%= fmt.money(totals.principalDisbursed) %></div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Principal Recovered</div>
+    <div class="mt-2 text-xl font-extrabold text-slate-900"><%= fmt.money(totals.principalRecovered) %></div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Capital Lost</div>
+    <div class="mt-2 text-xl font-extrabold <%= totals.capitalLost > 0 ? 'text-red-600' : 'text-slate-900' %>"><%= fmt.money(totals.capitalLost) %></div>
+    <div class="mt-1 text-xs text-slate-500"><%= totals.defaultedCount %> defaulted loan<%= totals.defaultedCount === 1 ? '' : 's' %></div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Locked-in</div>
+    <div class="mt-2 text-xl font-extrabold text-slate-900"><%= fmt.money(totals.lockedIn) %></div>
+    <div class="mt-1 text-xs text-slate-500">From fully-paid loans</div>
+  </div>
+</div>
+
+<!-- Income by month -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
+  <div class="px-5 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div>
+      <h3 class="font-bold text-slate-900">Income by Month</h3>
+      <p class="text-xs text-slate-500 mt-0.5">Interest earned from payments collected in the selected range.</p>
+    </div>
+    <form method="GET" class="no-print flex items-end gap-2">
+      <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">From</label>
+        <input name="from" type="date" value="<%= from %>" class="rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-500">
+      </div>
+      <div>
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">To</label>
+        <input name="to" type="date" value="<%= to %>" class="rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:ring-2 focus:ring-brand-500">
+      </div>
+      <button class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-3 py-1.5 rounded-lg text-sm">Apply</button>
+    </form>
+  </div>
+  <div class="p-5">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Income in range</div>
+        <div class="text-2xl font-extrabold text-emerald-600"><%= fmt.money(periodIncome) %></div>
+      </div>
+      <div class="text-right">
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Collected in range</div>
+        <div class="text-lg font-bold text-slate-900"><%= fmt.money(periodCollected) %></div>
+      </div>
+    </div>
+    <% if (months.length === 0) { %>
+      <div class="py-8 text-center text-slate-500 text-sm">No income in this period.</div>
+    <% } else { %>
+      <% const maxM = Math.max.apply(null, months.map(m => m.income)) || 1; %>
+      <div class="space-y-2">
+        <% months.forEach(m => { %>
+          <div>
+            <div class="flex items-center justify-between text-sm mb-1">
+              <span class="font-semibold text-slate-700"><%= m.label %></span>
+              <span class="font-bold text-emerald-600"><%= fmt.money(m.income) %></span>
+            </div>
+            <div class="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full" style="width: <%= (m.income / maxM) * 100 %>%"></div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+</div>
+
 <!-- Per-loan breakdown -->
-<div class="bg-white rounded-xl shadow-sm border border-slate-200 mt-6">
+<div class="bg-white rounded-xl shadow-sm border border-slate-200">
   <div class="px-5 py-4 border-b border-slate-200">
     <h3 class="font-bold text-slate-900">Income per Loan</h3>
   </div>
   <% if (loans.length === 0) { %>
     <div class="p-8 text-center text-slate-500 text-sm">No loans yet.</div>
   <% } else { %>
-    <div class="hidden md:block overflow-x-auto">
+    <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
           <tr>
@@ -141,7 +239,7 @@
             <tr class="hover:bg-slate-50 cursor-pointer" onclick="location.href='/loans/<%= l.id %>'">
               <td class="px-5 py-3">
                 <div class="font-semibold text-slate-900"><%= l.borrower_name %></div>
-                <div class="text-xs text-slate-500">Loan #<%= l.id %></div>
+                <div class="text-xs text-slate-500">Loan #<%= l.id %><% if (l.capitalLost > 0) { %> · <span class="text-red-600 font-semibold">lost <%= fmt.money(l.capitalLost) %></span><% } %></div>
               </td>
               <td class="px-5 py-3 text-right text-slate-600"><%= fmt.money(l.principal) %></td>
               <td class="px-5 py-3 text-right text-slate-600"><%= fmt.money(l.total_interest) %></td>
@@ -152,6 +250,8 @@
                   <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">Paid</span>
                 <% } else if (l.status === 'active') { %>
                   <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-brand-100 text-brand-800">Active</span>
+                <% } else if (l.status === 'defaulted') { %>
+                  <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-red-100 text-red-700">Defaulted</span>
                 <% } else { %>
                   <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-200 text-slate-700"><%= l.status %></span>
                 <% } %>
@@ -171,20 +271,17 @@
         </tfoot>
       </table>
     </div>
-    <ul class="md:hidden divide-y divide-slate-100">
-      <% loans.forEach(l => { %>
-        <li>
-          <a href="/loans/<%= l.id %>" class="block px-4 py-3 hover:bg-slate-50">
-            <div class="flex items-center justify-between gap-2">
-              <div class="font-semibold text-slate-900 truncate"><%= l.borrower_name %></div>
-              <span class="text-sm font-bold text-emerald-600"><%= fmt.money(l.income.realizedInterest) %></span>
-            </div>
-            <div class="text-xs text-slate-500 mt-1">
-              #<%= l.id %> · Interest <%= fmt.money(l.total_interest) %> · Collected <%= fmt.money(l.total_paid) %>
-            </div>
-          </a>
-        </li>
-      <% }); %>
-    </ul>
   <% } %>
 </div>
+
+<style>
+  @media print {
+    @page { size: portrait; margin: 0.5in; }
+    body { background: white !important; }
+    header, aside, nav, footer, .no-print { display: none !important; }
+    main { padding: 0 !important; margin: 0 !important; }
+    .print-only { display: block !important; }
+    .shadow-sm, .shadow-lg { box-shadow: none !important; }
+    .bg-gradient-to-br, .bg-slate-900 { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>

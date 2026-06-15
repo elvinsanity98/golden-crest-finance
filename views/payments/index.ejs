@@ -17,8 +17,12 @@
 </div>
 
 <% if (payments.length === 0) { %>
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
-    <p class="text-slate-500 text-sm">No payments collected on this date.</p>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+    <%- include('../partials/empty', {
+      icon: 'M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3 1.343 3 3-1.343 3-3 3m0-12v12m0 0V4m0 16v-4',
+      title: 'No collections on this date',
+      message: 'Pick another date above, or record a payment from a loan page.'
+    }) %>
   </div>
 <% } else { %>
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">

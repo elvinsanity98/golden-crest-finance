@@ -37,3 +37,31 @@ body {
 main > * {
   animation: fadeUp 0.25s ease-out;
 }
+
+/* Keyboard accessibility: clear focus ring for keyboard users only */
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Smooth interactive transitions */
+a, button, select, input, .transition-card {
+  transition: background-color .15s ease, color .15s ease, box-shadow .15s ease, transform .15s ease, border-color .15s ease;
+}
+
+/* Gentle hover lift for KPI / content cards (added via .transition-card) */
+.transition-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -8px rgba(15, 23, 42, 0.18);
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  main > *, .transition-card { animation: none !important; transition: none !important; }
+  .transition-card:hover { transform: none; }
+}

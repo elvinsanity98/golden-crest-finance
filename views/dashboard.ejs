@@ -2,24 +2,24 @@
 
 <!-- KPI cards -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 transition-card">
     <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Collected today</div>
     <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900"><%= fmt.money(totals.collectedToday) %></div>
     <div class="mt-1 text-xs text-slate-500"><%= totals.paymentsToday %> payment(s)</div>
   </div>
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 transition-card">
     <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Expected today</div>
     <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900"><%= fmt.money(expectedToday) %></div>
     <div class="mt-1 text-xs <%= totals.collectedToday >= expectedToday ? 'text-emerald-600' : 'text-amber-600' %>">
       <%= expectedToday > 0 ? ((totals.collectedToday/expectedToday)*100).toFixed(0) : 0 %>% collected
     </div>
   </div>
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 transition-card">
     <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Outstanding</div>
     <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900"><%= fmt.money(outstanding) %></div>
     <div class="mt-1 text-xs text-slate-500"><%= totals.activeLoans %> active loans</div>
   </div>
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 transition-card">
     <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Arrears</div>
     <div class="mt-2 text-2xl sm:text-3xl font-extrabold <%= arrearsTotal > 0 ? 'text-red-600' : 'text-emerald-600' %>"><%= fmt.money(arrearsTotal) %></div>
     <div class="mt-1 text-xs <%= overdueCount > 0 ? 'text-red-600' : 'text-slate-500' %>"><%= overdueCount %> overdue</div>

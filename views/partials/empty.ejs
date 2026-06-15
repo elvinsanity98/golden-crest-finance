@@ -1,0 +1,14 @@
+<%
+// Reusable empty state. Params: icon (svg path d), title, message, actionHref, actionLabel
+const _icon = typeof icon !== 'undefined' ? icon : 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4';
+%>
+<div class="p-10 sm:p-14 text-center">
+  <div class="w-14 h-14 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-4">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="<%= _icon %>"/></svg>
+  </div>
+  <h3 class="font-bold text-slate-900"><%= title %></h3>
+  <p class="text-sm text-slate-500 mt-1 max-w-sm mx-auto"><%= message %></p>
+  <% if (typeof actionHref !== 'undefined' && actionHref) { %>
+    <a href="<%= actionHref %>" class="inline-block mt-5 bg-brand-500 hover:bg-brand-400 text-slate-900 font-semibold px-5 py-2.5 rounded-lg shadow text-sm"><%= actionLabel %></a>
+  <% } %>
+</div>

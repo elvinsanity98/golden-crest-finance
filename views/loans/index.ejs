@@ -8,8 +8,14 @@
 </div>
 
 <% if (loans.length === 0) { %>
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
-    <p class="text-slate-500 text-sm">No loans found.</p>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+    <%- include('../partials/empty', {
+      icon: 'M3 10h18M3 6h18M3 14h18M3 18h18',
+      title: 'No ' + (status === 'all' ? '' : status + ' ') + 'loans',
+      message: status === 'active' ? 'Create a loan to start a daily collection schedule.' : 'Nothing to show under this filter.',
+      actionHref: status === 'active' ? '/loans/new' : '',
+      actionLabel: '+ New Loan'
+    }) %>
   </div>
 <% } else { %>
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">

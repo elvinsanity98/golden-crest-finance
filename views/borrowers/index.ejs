@@ -8,8 +8,14 @@
 </form>
 
 <% if (borrowers.length === 0) { %>
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
-    <p class="text-slate-500 text-sm">No borrowers found. <a href="/borrowers/new" class="text-brand-600 font-semibold">Add the first one →</a></p>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+    <%- include('../partials/empty', {
+      icon: 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5a4 4 0 11-8 0 4 4 0 018 0zm6 0a4 4 0 11-8 0 4 4 0 018 0z',
+      title: q ? 'No matches found' : 'No borrowers yet',
+      message: q ? 'Try a different name, phone, or ID number.' : 'Add your first borrower to start tracking loans and collections.',
+      actionHref: q ? '' : '/borrowers/new',
+      actionLabel: '+ Add Borrower'
+    }) %>
   </div>
 <% } else { %>
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
