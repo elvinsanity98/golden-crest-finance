@@ -4,12 +4,13 @@ Drop these image files into this folder (`public/img/`) with these **exact filen
 The app references them directly; until they exist, the site shows graceful
 fallbacks (a gold "GC" badge / the CEO's initials).
 
-| Filename | What it is | Recommended |
-|---|---|---|
-| `gc-icon.png` | Gold shield GC icon only (transparent background) | square, 256×256+ PNG |
-| `logo-horizontal.png` | Primary horizontal logo (shield + "GOLDEN CREST FINANCE") | transparent PNG, ~1000px wide |
-| `logo-stacked.png` | Secondary stacked logo | transparent PNG |
-| `ceo-marvin.jpg` | Photo of Marvin Dionaldo Trinidad (President/CEO) | square-ish JPG, 600×600+ |
+| Filename | What it is |
+|---|---|
+| `gc-icon.png` | Gold shield GC icon (used in topbar/login, on a white tile) |
+| `logo-horizontal.png` | Primary horizontal logo (shield + "GOLDEN CREST FINANCE") |
+| `ceo-marvin.jpg` | Photo of Marvin Dionaldo Trinidad (President/CEO) |
+
+(A stacked logo isn't required — the About page shows the icon mark as the secondary.)
 
 After adding them:
 ```
