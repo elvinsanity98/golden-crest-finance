@@ -3,27 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#054e5f">
   <title><%= title ? title + ' · ' : '' %><%= brand.name %></title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 3 L57 12 V31 C57 47 46 57 32 61 C18 57 7 47 7 31 V12 Z' fill='%23054e5f'/%3E%3Ctext x='32' y='42' font-size='26' font-weight='800' text-anchor='middle' fill='%23da8850' font-family='Arial,sans-serif'%3EGC%3C/text%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
+            // Brand gold — built around the logo's #DA8850
             brand: {
-              50:  '#fffbeb',
-              100: '#fef3c7',
-              200: '#fde68a',
-              300: '#fcd34d',
-              400: '#fbbf24',
-              500: '#f59e0b',
-              600: '#d97706',
-              700: '#b45309',
-              800: '#92400e',
-              900: '#78350f'
-            }
+              50:  '#fbf5ee',
+              100: '#f6e7d4',
+              200: '#edcba6',
+              300: '#e3ae77',
+              400: '#df9b5f',
+              500: '#da8850',
+              600: '#c06f3a',
+              700: '#9d5930',
+              800: '#7c462a',
+              900: '#653a24'
+            },
+            // Ink — dark teal #054E5F for dark surfaces & headings
+            ink: {
+              DEFAULT: '#054e5f',
+              700: '#0a6275',
+              800: '#053f4d',
+              900: '#04323d'
+            },
+            royal: '#00337c',
+            olive: '#898544'
           },
           fontFamily: {
             sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif']

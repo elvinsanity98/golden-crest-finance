@@ -84,7 +84,7 @@
     <p class="mt-2 text-sm text-slate-600">No collections can be recorded until the first payment date.</p>
   </div>
   <% } else if (loan.status === 'active') { %>
-  <div class="lg:col-span-1 bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl shadow-lg p-5 sm:p-6 text-white h-fit">
+  <div class="lg:col-span-1 bg-gradient-to-br from-ink to-ink-900 rounded-xl shadow-lg p-5 sm:p-6 text-white h-fit">
     <div class="text-xs font-bold uppercase tracking-wider text-brand-300">Record Payment</div>
     <h3 class="text-lg font-bold mt-1 mb-4">Daily Collection</h3>
     <form action="/payments" method="POST" data-confirm="Record a payment of ₱{amount} for this loan?" class="space-y-3">

@@ -6,7 +6,8 @@
   { href: '/reports', label: 'Reports', icon: 'M9 17v-6h13M9 17l-4-4m4 4l-4 4M3 3h13v6' },
   { href: '/income', label: 'Income', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
   { href: '/print/cards', label: 'Print Cards', icon: 'M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z' },
-  { href: '/calculator', label: 'Calculator', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' }
+  { href: '/calculator', label: 'Calculator', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
+  { href: '/about', label: 'About', icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' }
 ]; %>
 
 <aside id="sidebar" class="hidden lg:flex fixed inset-y-0 top-16 left-0 w-64 bg-white border-r border-slate-200 z-20 flex-col">
@@ -14,7 +15,7 @@
     <% nav.forEach(item => {
        const isActive = item.href === '/' ? path === '/' : path.indexOf(item.href) === 0;
     %>
-      <a href="<%= item.href %>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <%= isActive ? 'bg-brand-500 text-slate-900 shadow-sm' : 'text-slate-700 hover:bg-slate-100' %>">
+      <a href="<%= item.href %>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium <%= isActive ? 'bg-brand-500 text-ink shadow-sm' : 'text-slate-700 hover:bg-slate-100' %>">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="<%= item.icon %>"/>
         </svg>
@@ -23,7 +24,7 @@
     <% }); %>
   </nav>
   <div class="p-4 border-t border-slate-200">
-    <div class="rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 p-4 text-slate-900">
+    <div class="rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 p-4 text-ink">
       <div class="text-xs font-bold uppercase tracking-wider opacity-75">Loan Terms</div>
       <div class="mt-1 text-2xl font-extrabold">10% / month</div>
       <div class="text-xs opacity-75">Daily collection</div>
@@ -33,11 +34,11 @@
 
 <!-- Mobile sidebar drawer -->
 <div id="mobileSidebar" class="fixed inset-0 z-40 hidden lg:hidden">
-  <div class="absolute inset-0 bg-slate-900/60" data-close-sidebar></div>
+  <div class="absolute inset-0 bg-ink/70" data-close-sidebar></div>
   <div class="absolute inset-y-0 left-0 w-72 bg-white shadow-xl flex flex-col">
-    <div class="h-16 px-4 flex items-center justify-between border-b border-slate-200 bg-slate-900 text-white">
+    <div class="h-16 px-4 flex items-center justify-between border-b border-slate-200 bg-ink text-white">
       <span class="font-bold">Menu</span>
-      <button data-close-sidebar class="p-2 rounded hover:bg-slate-800">
+      <button data-close-sidebar class="p-2 rounded hover:bg-ink-700">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
@@ -45,7 +46,7 @@
       <% nav.forEach(item => {
          const isActive = item.href === '/' ? path === '/' : path.indexOf(item.href) === 0;
       %>
-        <a href="<%= item.href %>" class="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium <%= isActive ? 'bg-brand-500 text-slate-900' : 'text-slate-700 hover:bg-slate-100' %>">
+        <a href="<%= item.href %>" class="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium <%= isActive ? 'bg-brand-500 text-ink' : 'text-slate-700 hover:bg-slate-100' %>">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="<%= item.icon %>"/></svg>
           <span><%= item.label %></span>
         </a>

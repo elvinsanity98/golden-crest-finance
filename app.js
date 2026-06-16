@@ -22,6 +22,7 @@ const calculatorRoutes = require('./routes/calculator');
 const reportsRoutes = require('./routes/reports');
 const incomeRoutes = require('./routes/income');
 const printRoutes = require('./routes/print');
+const aboutRoutes = require('./routes/about');
 
 const app = express();
 
@@ -89,7 +90,8 @@ app.use(injectUser);
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 
 app.use('/', authRoutes);
-app.use('/calculator', calculatorRoutes);
+app.use('/calculator', calculatorRoutes); // public
+app.use('/about', aboutRoutes); // public
 
 app.use('/', requireAuth, dashboardRoutes);
 app.use('/borrowers', requireAuth, borrowersRoutes);
