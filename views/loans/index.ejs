@@ -1,21 +1,49 @@
 <%- include('../partials/page-header', { heading: 'Loans', eyebrow: 'Portfolio', subtitle: 'All loans tracked by status.', actions: '<a href="/loans/new" class="bg-brand-500 hover:bg-brand-400 text-slate-900 font-semibold px-4 py-2 rounded-lg text-sm shadow">+ New Loan</a>' }) %>
 
+<% const qstr = q ? '&q=' + encodeURIComponent(q) : ''; %>
+
+<form method="GET" class="mb-4">
+  <input type="hidden" name="status" value="<%= status %>">
+  <div class="relative">
+    <input name="q" value="<%= q %>" placeholder="Search loans by borrower name, loan #, or purpose..." class="w-full pl-10 pr-24 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-2.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <div class="absolute right-1.5 top-1.5 flex gap-1">
+      <% if (q) { %>
+        <a href="/loans?status=<%= status %>" class="px-2 py-1 text-xs font-semibold text-slate-500 hover:text-slate-700 rounded-md hover:bg-slate-100 flex items-center">Clear</a>
+      <% } %>
+      <button class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-1.5 rounded-md">Search</button>
+    </div>
+  </div>
+</form>
+
 <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
   <% const tabs = [['active','Active'],['completed','Paid'],['defaulted','Defaulted'],['all','All']]; %>
   <% tabs.forEach(([k, label]) => { %>
-    <a href="/loans?status=<%= k %>" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap <%= status === k ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50' %>"><%= label %></a>
+    <a href="/loans?status=<%= k %><%= qstr %>" class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap <%= status === k ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50' %>"><%= label %></a>
   <% }); %>
 </div>
 
+<% if (q) { %>
+  <p class="text-sm text-slate-500 mb-3"><%= loans.length %> result<%= loans.length === 1 ? '' : 's' %> for "<span class="font-semibold text-slate-700"><%= q %></span>"<%= status !== 'all' ? ' in ' + status : '' %></p>
+<% } %>
+
 <% if (loans.length === 0) { %>
   <div class="bg-white rounded-xl shadow-sm border border-slate-200">
-    <%- include('../partials/empty', {
-      icon: 'M3 10h18M3 6h18M3 14h18M3 18h18',
-      title: 'No ' + (status === 'all' ? '' : status + ' ') + 'loans',
-      message: status === 'active' ? 'Create a loan to start a daily collection schedule.' : 'Nothing to show under this filter.',
-      actionHref: status === 'active' ? '/loans/new' : '',
-      actionLabel: '+ New Loan'
-    }) %>
+    <% if (q) { %>
+      <%- include('../partials/empty', {
+        icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
+        title: 'No loans match your search',
+        message: 'Try a different borrower name, loan number, or purpose.'
+      }) %>
+    <% } else { %>
+      <%- include('../partials/empty', {
+        icon: 'M3 10h18M3 6h18M3 14h18M3 18h18',
+        title: 'No ' + (status === 'all' ? '' : status + ' ') + 'loans',
+        message: status === 'active' ? 'Create a loan to start a daily collection schedule.' : 'Nothing to show under this filter.',
+        actionHref: status === 'active' ? '/loans/new' : '',
+        actionLabel: '+ New Loan'
+      }) %>
+    <% } %>
   </div>
 <% } else { %>
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">

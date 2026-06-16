@@ -9,8 +9,21 @@ router.get('/', async (req, res, next) => {
   try {
     const status = req.query.status || 'active';
     const validStatus = ['active', 'completed', 'defaulted', 'all'].includes(status) ? status : 'active';
-    const where = validStatus === 'all' ? '' : 'WHERE l.status = ?';
-    const args = validStatus === 'all' ? [] : [validStatus];
+    const q = (req.query.q || '').trim();
+
+    const clauses = [];
+    const args = [];
+    if (validStatus !== 'all') {
+      clauses.push('l.status = ?');
+      args.push(validStatus);
+    }
+    if (q) {
+      // Match borrower name, loan id, or purpose.
+      clauses.push('(b.full_name LIKE ? OR CAST(l.id AS TEXT) = ? OR l.purpose LIKE ?)');
+      args.push(`%${q}%`, q.replace(/^#/, ''), `%${q}%`);
+    }
+    const where = clauses.length ? 'WHERE ' + clauses.join(' AND ') : '';
+
     const rows = await db.all(`
       SELECT l.*, b.full_name AS borrower_name,
         (SELECT COALESCE(SUM(amount),0) FROM payments p WHERE p.loan_id = l.id) AS total_paid
@@ -20,7 +33,7 @@ router.get('/', async (req, res, next) => {
       ORDER BY l.created_at DESC
     `, args);
     const decorated = rows.map(l => ({ ...l, total_paid: Number(l.total_paid), progress: loanProgress(l, Number(l.total_paid)) }));
-    res.render('loans/index', { title: 'Loans', loans: decorated, status: validStatus });
+    res.render('loans/index', { title: 'Loans', loans: decorated, status: validStatus, q });
   } catch (err) { next(err); }
 });
 
