@@ -10,7 +10,7 @@
   <div class="flex flex-wrap gap-2">
     <a href="/loans/new?borrower_id=<%= borrower.id %>" class="bg-brand-500 hover:bg-brand-400 text-slate-900 font-semibold px-4 py-2 rounded-lg text-sm shadow">+ New Loan</a>
     <a href="/borrowers/<%= borrower.id %>/edit" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-4 py-2 rounded-lg text-sm">Edit</a>
-    <form action="/borrowers/<%= borrower.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete this borrower? Loan history will also be removed.');">
+    <form action="/borrowers/<%= borrower.id %>?_method=DELETE" method="POST" data-confirm="Delete this borrower? Loan history will also be removed.">
       <button class="bg-red-50 hover:bg-red-100 text-red-700 font-semibold px-4 py-2 rounded-lg text-sm">Delete</button>
     </form>
   </div>

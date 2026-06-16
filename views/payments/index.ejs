@@ -50,7 +50,7 @@
               <td class="px-5 py-3 text-slate-600"><%= p.collected_by || '—' %></td>
               <td class="px-5 py-3 text-slate-600 italic"><%= p.notes || '' %></td>
               <td class="px-5 py-3 text-right">
-                <form action="/payments/<%= p.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete this payment?');">
+                <form action="/payments/<%= p.id %>?_method=DELETE" method="POST" data-confirm="Delete this payment of <%= fmt.money(p.amount) %> from <%= p.borrower_name %>?">
                   <button class="text-xs text-red-600 hover:text-red-700 font-semibold">Delete</button>
                 </form>
               </td>

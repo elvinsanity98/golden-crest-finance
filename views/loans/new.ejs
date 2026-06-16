@@ -5,10 +5,10 @@
 <% } %>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <form method="POST" action="/loans" class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-4">
+  <form method="POST" action="/loans" data-confirm="Create this loan with the details entered?" class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-4">
     <div>
       <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Borrower *</label>
-      <select name="borrower_id" id="borrowerSelect" required class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+      <select name="borrower_id" id="borrowerSelect" required data-searchable data-placeholder="Search a borrower by name…" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
         <option value="">— Select a borrower —</option>
         <% borrowers.forEach(b => { %>
           <option value="<%= b.id %>" <%= String(selectedBorrowerId) === String(b.id) ? 'selected' : '' %>><%= b.full_name %></option>

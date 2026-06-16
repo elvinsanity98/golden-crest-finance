@@ -18,7 +18,7 @@
           <div class="text-sm font-semibold"><%= currentUser.fullName %></div>
           <div class="text-[10px] uppercase tracking-wider text-slate-400"><%= currentUser.role %></div>
         </div>
-        <form action="/logout" method="POST" class="ml-1">
+        <form action="/logout" method="POST" data-confirm="Log out of Golden Crest Finance?" class="ml-1">
           <button class="px-3 py-1.5 text-sm rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700">Logout</button>
         </form>
       <% } else { %>

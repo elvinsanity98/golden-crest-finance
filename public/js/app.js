@@ -26,3 +26,20 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
+// Confirmation dialogs for any form carrying a data-confirm message.
+// Placeholders like {amount} are replaced with that field's current value.
+document.addEventListener('submit', function (e) {
+  var form = e.target;
+  if (!form || !form.getAttribute) return;
+  var msg = form.getAttribute('data-confirm');
+  if (!msg) return;
+  msg = msg.replace(/\{(\w+)\}/g, function (_, name) {
+    var el = form.elements[name];
+    return el && el.value != null ? el.value : '';
+  });
+  if (!window.confirm(msg)) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}, true);

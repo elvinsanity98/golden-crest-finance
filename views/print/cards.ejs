@@ -149,7 +149,7 @@ const cfg = cardCfg[count] || cardCfg[5];
       <% for (let i = 0; i < maxCards; i++) { %>
         <div class="flex items-center gap-2 sm:gap-3">
           <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-xs sm:text-sm flex-shrink-0">#<%= i + 1 %></span>
-          <select name="b<%= i + 1 %>" class="flex-1 min-w-0 rounded-lg border border-slate-300 px-2 sm:px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm truncate">
+          <select name="b<%= i + 1 %>" data-searchable data-placeholder="Search or pick a borrower…" class="flex-1 min-w-0 rounded-lg border border-slate-300 px-2 sm:px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm truncate">
             <option value="">— Skip this slot —</option>
             <option value="blank" <%= raw[i] === 'blank' ? 'selected' : '' %>>📝 Blank card</option>
             <% borrowers.forEach(b => { %>

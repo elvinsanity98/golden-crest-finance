@@ -4,7 +4,7 @@
   <div class="mb-4 rounded-lg px-4 py-3 text-sm bg-red-50 text-red-800 border border-red-200"><%= errors %></div>
 <% } %>
 
-<form method="POST" action="/borrowers/<%= borrower.id %>?_method=PUT" class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-4 max-w-2xl">
+<form method="POST" action="/borrowers/<%= borrower.id %>?_method=PUT" data-confirm="Save changes to this borrower?" class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-4 max-w-2xl">
   <div>
     <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Full Name *</label>
     <input name="full_name" required value="<%= borrower.full_name %>" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">

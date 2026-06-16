@@ -39,10 +39,10 @@
   <% if (dueToday.length === 0) { %>
     <p class="text-sm text-slate-400">No active loans scheduled for today. Create a loan to get started.</p>
   <% } else { %>
-    <form action="/payments" method="POST" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+    <form action="/payments" method="POST" data-confirm="Record a payment of ₱{amount}?" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
       <div class="sm:col-span-2">
         <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Loan</label>
-        <select name="loan_id" required class="w-full rounded-lg bg-slate-700 border border-slate-600 text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+        <select name="loan_id" required data-searchable data-placeholder="Search a borrower…" class="w-full rounded-lg bg-slate-700 border border-slate-600 text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
           <% dueToday.forEach(l => { %>
             <option value="<%= l.id %>" data-daily="<%= l.daily_payment %>">
               <%= l.borrower_name %> · #<%= l.id %> · daily <%= fmt.money(l.daily_payment) %><%= l.progress.arrears > 0 ? ' · ARREARS ' + fmt.money(l.progress.arrears) : '' %>
