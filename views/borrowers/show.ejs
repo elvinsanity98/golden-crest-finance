@@ -48,7 +48,7 @@
               <div class="flex-1 min-w-0">
                 <a href="/loans/<%= l.id %>" class="font-semibold text-slate-900 hover:text-brand-600">Loan #<%= l.id %> · <%= fmt.money(l.principal) %></a>
                 <div class="text-xs text-slate-500 mt-0.5">
-                  <%= fmt.date(l.start_date) %> → <%= fmt.date(l.end_date) %> · <%= l.term_days %>d · daily <%= fmt.money(l.daily_payment) %>
+                  <%= fmt.date(l.start_date) %> → <%= fmt.date(l.end_date) %> · <%= l.term_days %>d · <%= fmt.money(l.daily_payment) %>/<%= l.progress.freqLabel %>
                 </div>
               </div>
               <div class="text-right flex-shrink-0">

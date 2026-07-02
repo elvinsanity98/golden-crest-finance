@@ -1,4 +1,4 @@
-<%- include('../partials/page-header', { heading: 'New Loan', eyebrow: 'Loan Origination', subtitle: 'Set principal, term, and start date — totals are calculated automatically.' }) %>
+<%- include('../partials/page-header', { heading: 'New Loan', eyebrow: 'Loan Origination', subtitle: 'Set principal, term, mode of payment, and start date — totals are calculated automatically.' }) %>
 
 <% if (errors) { %>
   <div class="mb-4 rounded-lg px-4 py-3 text-sm bg-red-50 text-red-800 border border-red-200"><%= errors %></div>
@@ -19,78 +19,13 @@
       <% } %>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Principal Amount (₱) *</label>
-        <input id="principal" name="principal" type="number" step="0.01" min="1" required value="<%= form.principal || '' %>" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
-      </div>
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Term (Days) *</label>
-        <input id="termDays" name="term_days" type="number" min="1" required value="<%= form.term_days || 30 %>" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Monthly Interest (%)</label>
-        <input id="rate" name="monthly_interest_rate" type="number" step="0.01" min="0" value="<%= form.monthly_interest_rate || 10 %>" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
-        <p class="text-xs text-slate-500 mt-1">Standard rate is 10% / month.</p>
-      </div>
-      <div>
-        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">First Payment Date</label>
-        <input name="start_date" type="date" value="<%= form.start_date || fmt.today() %>" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
-        <p class="text-xs text-slate-500 mt-1">The day the borrower receives the loan and makes their first ₱payment.</p>
-      </div>
-    </div>
-
-    <div>
-      <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Purpose</label>
-      <input name="purpose" value="<%= form.purpose || '' %>" placeholder="e.g. Business capital, school fees" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
-    </div>
-
-    <div>
-      <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Notes</label>
-      <textarea name="notes" rows="2" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent"><%= form.notes || '' %></textarea>
-    </div>
+    <%- include('_form-fields', { form }) %>
 
     <div class="flex gap-2 pt-2">
-      <button class="bg-brand-500 hover:bg-brand-400 text-slate-900 font-bold px-5 py-2.5 rounded-lg shadow text-sm">Create Loan</button>
+      <button class="bg-brand-500 hover:bg-brand-400 text-ink font-bold px-5 py-2.5 rounded-lg shadow text-sm">Create Loan</button>
       <a href="/loans" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-5 py-2.5 rounded-lg text-sm">Cancel</a>
     </div>
   </form>
 
-  <aside class="bg-gradient-to-br from-ink to-ink-900 rounded-xl shadow-lg p-5 sm:p-6 text-white sticky top-20 h-fit">
-    <div class="text-xs font-bold uppercase tracking-wider text-brand-300">Live Preview</div>
-    <h3 class="text-lg font-bold mt-1 mb-4">Loan Summary</h3>
-    <dl class="space-y-3 text-sm">
-      <div class="flex justify-between"><dt class="text-slate-400">Principal</dt><dd id="sumPrincipal" class="font-semibold">₱0.00</dd></div>
-      <div class="flex justify-between"><dt class="text-slate-400">Interest</dt><dd id="sumInterest" class="font-semibold">₱0.00</dd></div>
-      <div class="flex justify-between border-t border-slate-700 pt-3"><dt class="text-slate-300 font-semibold">Total Payable</dt><dd id="sumTotal" class="font-bold text-brand-400">₱0.00</dd></div>
-      <div class="flex justify-between bg-brand-500/20 -mx-2 px-2 py-2 rounded-lg">
-        <dt class="text-brand-200 font-semibold">Daily Payment</dt>
-        <dd id="sumDaily" class="font-extrabold text-xl text-brand-300">₱0.00</dd>
-      </div>
-    </dl>
-    <p class="mt-4 text-xs text-slate-400">Interest = Principal × monthly rate × (days / 30). Daily payment = Total ÷ term days.</p>
-  </aside>
+  <%- include('_preview') %>
 </div>
-
-<script>
-  function fmtMoney(v) { return '₱' + (Number(v) || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-  function recalc() {
-    var p = parseFloat(document.getElementById('principal').value) || 0;
-    var d = parseFloat(document.getElementById('termDays').value) || 0;
-    var r = (parseFloat(document.getElementById('rate').value) || 0) / 100;
-    var interest = p * r * (d / 30);
-    var total = p + interest;
-    var daily = d > 0 ? total / d : 0;
-    document.getElementById('sumPrincipal').textContent = fmtMoney(p);
-    document.getElementById('sumInterest').textContent = fmtMoney(interest);
-    document.getElementById('sumTotal').textContent = fmtMoney(total);
-    document.getElementById('sumDaily').textContent = fmtMoney(daily);
-  }
-  ['principal','termDays','rate'].forEach(function(id){
-    document.getElementById(id).addEventListener('input', recalc);
-  });
-  recalc();
-</script>

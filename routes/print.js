@@ -12,6 +12,7 @@ router.get('/cards', async (req, res, next) => {
       SELECT b.id, b.full_name, b.address,
         (SELECT l.id FROM loans l WHERE l.borrower_id = b.id AND l.status = 'active' ORDER BY l.created_at DESC LIMIT 1) AS active_loan_id,
         (SELECT l.daily_payment FROM loans l WHERE l.borrower_id = b.id AND l.status = 'active' ORDER BY l.created_at DESC LIMIT 1) AS daily_payment,
+        (SELECT l.payment_frequency FROM loans l WHERE l.borrower_id = b.id AND l.status = 'active' ORDER BY l.created_at DESC LIMIT 1) AS payment_frequency,
         (SELECT l.end_date FROM loans l WHERE l.borrower_id = b.id AND l.status = 'active' ORDER BY l.created_at DESC LIMIT 1) AS due_date,
         (SELECT l.start_date FROM loans l WHERE l.borrower_id = b.id AND l.status = 'active' ORDER BY l.created_at DESC LIMIT 1) AS start_date,
         (SELECT l.term_days FROM loans l WHERE l.borrower_id = b.id AND l.status = 'active' ORDER BY l.created_at DESC LIMIT 1) AS term_days

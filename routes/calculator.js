@@ -1,5 +1,5 @@
 const express = require('express');
-const { computeLoan, addDays } = require('../helpers/calc');
+const { computeLoan, addDays, FREQUENCIES } = require('../helpers/calc');
 const { today } = require('../helpers/format');
 
 const router = express.Router();
@@ -12,6 +12,7 @@ router.get('/', (req, res) => {
     principal: req.query.principal || '',
     term_days: req.query.term_days || '',
     monthly_rate: req.query.monthly_rate || 10,
+    frequency: FREQUENCIES[req.query.frequency] ? req.query.frequency : 'daily',
     start_date: req.query.start_date || today()
   };
   if (req.query.principal && req.query.term_days) {
@@ -19,12 +20,17 @@ router.get('/', (req, res) => {
       result = computeLoan({
         principal: form.principal,
         termDays: form.term_days,
-        monthlyRate: form.monthly_rate
+        monthlyRate: form.monthly_rate,
+        frequency: form.frequency
       });
+      const interval = FREQUENCIES[form.frequency].intervalDays;
       schedule = [];
-      for (let i = 0; i < result.termDays; i++) {
-        // Day 1 = start date itself
-        schedule.push({ day: i + 1, date: addDays(form.start_date, i), amount: result.dailyPayment });
+      for (let k = 1; k <= result.periods; k++) {
+        // Installment k due at the end of its period; Day 1 = start date.
+        const due = k * interval >= result.termDays
+          ? addDays(form.start_date, result.termDays - 1)
+          : addDays(form.start_date, k * interval - 1);
+        schedule.push({ day: k, date: due, amount: result.installment });
       }
     } catch (e) {
       error = e.message;
@@ -38,7 +44,8 @@ router.post('/api', (req, res) => {
     const result = computeLoan({
       principal: req.body.principal,
       termDays: req.body.term_days,
-      monthlyRate: req.body.monthly_rate || 10
+      monthlyRate: req.body.monthly_rate || 10,
+      frequency: req.body.frequency || 'daily'
     });
     res.json(result);
   } catch (e) {

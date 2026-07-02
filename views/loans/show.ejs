@@ -1,13 +1,17 @@
 <div class="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
   <div>
     <div class="text-xs font-bold uppercase tracking-wider text-brand-600">Loan Details</div>
-    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Loan #<%= loan.id %></h1>
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Loan #<%= loan.id %>
+      <span class="align-middle inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-ink text-white ml-1"><%= progress.freqAdverb %></span>
+    </h1>
     <div class="text-sm text-slate-600 mt-1">
       <a href="/borrowers/<%= loan.borrower_id %>" class="font-semibold text-slate-900 hover:text-brand-600"><%= loan.borrower_name %></a>
       <% if (loan.borrower_phone) { %> · <%= loan.borrower_phone %><% } %>
+      · <%= fmt.money(progress.installment) %> per <%= progress.freqLabel %>
     </div>
   </div>
   <div class="flex flex-wrap gap-2">
+    <a href="/loans/<%= loan.id %>/edit" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-4 py-2 rounded-lg text-sm">Edit Terms</a>
     <% if (loan.status === 'active') { %>
       <form action="/loans/<%= loan.id %>/close" method="POST" data-confirm="Mark this loan as fully paid?">
         <input type="hidden" name="status" value="completed">
@@ -63,11 +67,13 @@
   <div class="grid grid-cols-3 gap-2 mt-4 text-center text-xs">
     <% if (progress.scheduled) { %>
       <div><div class="font-bold text-slate-900">Not started</div><div class="text-slate-500">Starts <%= fmt.date(loan.start_date) %></div></div>
-    <% } else { %>
+    <% } else if (progress.frequency === 'daily') { %>
       <div><div class="font-bold text-slate-900">Day <%= progress.elapsed %> / <%= loan.term_days %></div><div class="text-slate-500">Current day</div></div>
+    <% } else { %>
+      <div><div class="font-bold text-slate-900">Payment <%= progress.currentPeriod %> / <%= progress.periods %></div><div class="text-slate-500">Current <%= progress.freqLabel %></div></div>
     <% } %>
     <div><div class="font-bold text-slate-900"><%= progress.daysRemaining %></div><div class="text-slate-500">Days remaining</div></div>
-    <div><div class="font-bold text-slate-900"><%= fmt.money(loan.daily_payment) %></div><div class="text-slate-500">Daily target</div></div>
+    <div><div class="font-bold text-slate-900"><%= fmt.money(progress.installment) %></div><div class="text-slate-500"><%= progress.freqAdverb %> target</div></div>
   </div>
 </div>
 
@@ -86,7 +92,7 @@
   <% } else if (loan.status === 'active') { %>
   <div class="lg:col-span-1 bg-gradient-to-br from-ink to-ink-900 rounded-xl shadow-lg p-5 sm:p-6 text-white h-fit">
     <div class="text-xs font-bold uppercase tracking-wider text-brand-300">Record Payment</div>
-    <h3 class="text-lg font-bold mt-1 mb-4">Daily Collection</h3>
+    <h3 class="text-lg font-bold mt-1 mb-4"><%= progress.freqAdverb %> Collection</h3>
     <form action="/payments" method="POST" data-confirm="Record a payment of ₱{amount} for this loan?" class="space-y-3">
       <input type="hidden" name="loan_id" value="<%= loan.id %>">
       <div>
@@ -147,24 +153,27 @@
   </div>
 </div>
 
-<!-- Daily schedule -->
+<!-- Collection schedule (one cell per installment: day / week / month) -->
 <div class="bg-white rounded-xl shadow-sm border border-slate-200 mt-6">
   <div class="px-5 py-4 border-b border-slate-200">
-    <h3 class="font-bold text-slate-900">Daily Collection Schedule</h3>
-    <p class="text-xs text-slate-500 mt-0.5">Term: <%= fmt.date(loan.start_date) %> → <%= fmt.date(loan.end_date) %> (<%= loan.term_days %> days)</p>
+    <h3 class="font-bold text-slate-900"><%= progress.freqAdverb %> Collection Schedule</h3>
+    <p class="text-xs text-slate-500 mt-0.5">
+      Term: <%= fmt.date(loan.start_date) %> → <%= fmt.date(loan.end_date) %> (<%= loan.term_days %> days ·
+      <%= progress.periods %> <%= progress.freqLabel %><%= progress.periods === 1 ? '' : 's' %> · <%= fmt.money(progress.installment) %> each)
+    </p>
   </div>
   <div class="p-3 sm:p-5">
-    <div class="grid grid-cols-7 sm:grid-cols-10 md:grid-cols-14 lg:grid-cols-15 gap-1">
+    <div class="grid <%= progress.frequency === 'daily' ? 'grid-cols-7 sm:grid-cols-10 md:grid-cols-14 lg:grid-cols-15' : 'grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10' %> gap-1">
       <% schedule.forEach(s => {
         var status;
-        // Cumulative coverage: a day is paid if total paid through this day
-        // covers total expected — advance payments roll forward. Partial
-        // catches days that have some credit (either a same-day payment or
-        // a surplus from prior days) but aren't fully covered.
+        // Cumulative coverage: a period is paid if total paid through it
+        // covers total expected — advance payments roll forward. Partial =
+        // some credit (same-period payment or carried surplus) but short.
+        // Missed only once the period's due date has passed.
         if (s.covered) status = 'paid';
         else if (s.partial) status = 'partial';
         else if (s.date < todayStr) status = 'missed';
-        else if (s.date === todayStr) status = 'today';
+        else if (s.periodStart <= todayStr) status = 'today';
         else status = 'future';
         var cls = ({
           paid: 'bg-emerald-500 text-white',
@@ -173,16 +182,17 @@
           today: 'bg-brand-500 text-slate-900 ring-2 ring-brand-300',
           future: 'bg-slate-100 text-slate-500'
         })[status];
-        var tip = 'Day ' + s.day + ' · ' + s.date + '\nPaid this day: ' + fmt.money(s.paid) + ' of ' + fmt.money(s.expected);
+        var unit = progress.frequency === 'daily' ? 'Day' : (progress.frequency === 'weekly' ? 'Week' : 'Month');
+        var tip = unit + ' ' + s.period + ' · due ' + s.date + '\nPaid this ' + progress.freqLabel + ': ' + fmt.money(s.paid) + ' of ' + fmt.money(s.expected);
         if (s.credit !== s.paid) {
-          tip += '\nCredit applied this day: ' + fmt.money(s.credit) + ' of ' + fmt.money(s.expected);
+          tip += '\nCredit applied: ' + fmt.money(s.credit) + ' of ' + fmt.money(s.expected);
         }
         if (s.paid !== s.cumPaid) {
           tip += '\nCumulative: ' + fmt.money(s.cumPaid) + ' of ' + fmt.money(s.cumExpected);
         }
       %>
-        <div class="<%= cls %> aspect-square rounded text-[10px] flex items-center justify-center font-bold cursor-help" title="<%= tip %>">
-          <%= s.day %>
+        <div class="<%= cls %> <%= progress.frequency === 'daily' ? 'aspect-square text-[10px]' : 'py-2 text-[11px]' %> rounded flex items-center justify-center font-bold cursor-help" title="<%= tip %>">
+          <%= progress.frequency === 'daily' ? s.period : (fmt.date(s.date)) %>
         </div>
       <% }); %>
     </div>

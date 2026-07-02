@@ -1,0 +1,54 @@
+<%# Live preview panel + recalc script shared by new/edit loan forms. %>
+<aside class="bg-gradient-to-br from-ink to-ink-900 rounded-xl shadow-lg p-5 sm:p-6 text-white sticky top-20 h-fit">
+  <div class="text-xs font-bold uppercase tracking-wider text-brand-300">Live Preview</div>
+  <h3 class="text-lg font-bold mt-1 mb-4">Loan Summary</h3>
+  <dl class="space-y-3 text-sm">
+    <div class="flex justify-between"><dt class="text-slate-400">Principal</dt><dd id="sumPrincipal" class="font-semibold">₱0.00</dd></div>
+    <div class="flex justify-between"><dt class="text-slate-400">Interest</dt><dd id="sumInterest" class="font-semibold">₱0.00</dd></div>
+    <div class="flex justify-between"><dt class="text-slate-400">Installments</dt><dd id="sumPeriods" class="font-semibold">0</dd></div>
+    <div class="flex justify-between border-t border-slate-700 pt-3"><dt class="text-slate-300 font-semibold">Total Payable</dt><dd id="sumTotal" class="font-bold text-brand-400">₱0.00</dd></div>
+    <div class="flex justify-between bg-brand-500/20 -mx-2 px-2 py-2 rounded-lg">
+      <dt id="sumFreqLabel" class="text-brand-200 font-semibold">Daily Payment</dt>
+      <dd id="sumInstallment" class="font-extrabold text-xl text-brand-300">₱0.00</dd>
+    </div>
+  </dl>
+  <p class="mt-4 text-xs text-slate-400">Interest = Principal × monthly rate × (days / 30). Installment = Total ÷ number of payments.</p>
+</aside>
+
+<script>
+  (function () {
+    var UNIT_DAYS = { days: 1, weeks: 7, months: 30 };
+    var FREQ = {
+      daily:   { interval: 1,  label: 'Daily Payment' },
+      weekly:  { interval: 7,  label: 'Weekly Payment' },
+      monthly: { interval: 30, label: 'Monthly Payment' }
+    };
+    function fmtMoney(v) { return '₱' + (Number(v) || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function recalc() {
+      var p = parseFloat(document.getElementById('principal').value) || 0;
+      var tv = parseFloat(document.getElementById('termValue').value) || 0;
+      var tu = document.getElementById('termUnit').value;
+      var fq = document.getElementById('frequency').value;
+      var r = (parseFloat(document.getElementById('rate').value) || 0) / 100;
+      var days = tv * (UNIT_DAYS[tu] || 1);
+      var freq = FREQ[fq] || FREQ.daily;
+      var interest = p * r * (days / 30);
+      var total = p + interest;
+      var periods = days > 0 ? Math.max(1, Math.ceil(days / freq.interval)) : 0;
+      var installment = periods > 0 ? total / periods : 0;
+      document.getElementById('sumPrincipal').textContent = fmtMoney(p);
+      document.getElementById('sumInterest').textContent = fmtMoney(interest);
+      document.getElementById('sumPeriods').textContent = periods + (periods === 1 ? ' payment' : ' payments');
+      document.getElementById('sumTotal').textContent = fmtMoney(total);
+      document.getElementById('sumFreqLabel').textContent = freq.label;
+      document.getElementById('sumInstallment').textContent = fmtMoney(installment);
+    }
+    ['principal', 'termValue', 'rate'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', recalc);
+    });
+    ['termUnit', 'frequency'].forEach(function (id) {
+      document.getElementById(id).addEventListener('change', recalc);
+    });
+    recalc();
+  })();
+</script>

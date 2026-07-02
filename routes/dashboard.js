@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db/database');
 const { today } = require('../helpers/format');
-const { loanProgress } = require('../helpers/calc');
+const { loanProgress, daysBetween } = require('../helpers/calc');
 
 const router = express.Router();
 
@@ -29,12 +29,6 @@ router.get('/', async (req, res, next) => {
       paymentsToday: Number(paymentsTodayR.c)
     };
 
-    const expectedTodayRow = await db.get(`
-      SELECT COALESCE(SUM(daily_payment),0) AS expected
-      FROM loans
-      WHERE status = 'active' AND start_date <= ? AND end_date >= ?
-    `, [todayStr, todayStr]);
-
     const activeLoans = await db.all(`
       SELECT l.*, b.full_name AS borrower_name,
         (SELECT COALESCE(SUM(amount),0) FROM payments p WHERE p.loan_id = l.id) AS total_paid
@@ -44,13 +38,29 @@ router.get('/', async (req, res, next) => {
       ORDER BY l.created_at DESC
     `);
 
-    const decorated = activeLoans.map(l => ({ ...l, total_paid: Number(l.total_paid), progress: loanProgress(l, Number(l.total_paid)) }));
+    const decorated = activeLoans.map(l => {
+      const progress = loanProgress(l, Number(l.total_paid));
+      // Installment falls due today when today is a period-end day (or the
+      // final day of the term). Daily loans: every in-term day qualifies.
+      let dueTodayFlag = false;
+      if (l.start_date <= todayStr && l.end_date >= todayStr) {
+        const d = daysBetween(l.start_date, todayStr) + 1; // Day 1 = start
+        dueTodayFlag = (d % progress.intervalDays === 0) || todayStr === l.end_date;
+      }
+      return { ...l, total_paid: Number(l.total_paid), progress, dueTodayFlag };
+    });
     const overdueCount = decorated.filter(l => l.progress.overdue).length;
     const arrearsTotal = decorated.reduce((sum, l) => sum + l.progress.arrears, 0);
     const outstanding = decorated.reduce((sum, l) => sum + l.progress.balance, 0);
 
+    // Expected today = installments actually due today (frequency-aware).
+    const expectedToday = decorated
+      .filter(l => l.dueTodayFlag)
+      .reduce((s, l) => s + l.progress.installment, 0);
+
+    // Collection worklist: installment due today, or already behind.
     const dueToday = decorated
-      .filter(l => l.start_date <= todayStr && l.end_date >= todayStr)
+      .filter(l => l.dueTodayFlag || l.progress.arrears > 0)
       .sort((a, b) => b.progress.arrears - a.progress.arrears)
       .slice(0, 8);
 
@@ -66,7 +76,7 @@ router.get('/', async (req, res, next) => {
     res.render('dashboard', {
       title: 'Dashboard',
       totals,
-      expectedToday: Number(expectedTodayRow.expected),
+      expectedToday: +expectedToday.toFixed(2),
       overdueCount,
       arrearsTotal,
       outstanding,

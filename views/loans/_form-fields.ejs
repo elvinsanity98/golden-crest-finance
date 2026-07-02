@@ -1,0 +1,50 @@
+<%# Shared loan term fields for new + edit forms. Expects `form`. %>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <div>
+    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Principal Amount (₱) *</label>
+    <input id="principal" name="principal" type="number" step="0.01" min="1" required value="<%= form.principal || '' %>" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+  </div>
+  <div>
+    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Term *</label>
+    <div class="flex gap-2">
+      <input id="termValue" name="term_value" type="number" min="1" step="1" required value="<%= form.term_value || 30 %>" class="w-1/2 rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+      <select id="termUnit" name="term_unit" class="w-1/2 rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+        <option value="days" <%= (form.term_unit || 'days') === 'days' ? 'selected' : '' %>>Days</option>
+        <option value="weeks" <%= form.term_unit === 'weeks' ? 'selected' : '' %>>Weeks</option>
+        <option value="months" <%= form.term_unit === 'months' ? 'selected' : '' %>>Months</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <div>
+    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Mode of Payment *</label>
+    <select id="frequency" name="payment_frequency" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+      <option value="daily" <%= (form.payment_frequency || 'daily') === 'daily' ? 'selected' : '' %>>Daily — collect every day</option>
+      <option value="weekly" <%= form.payment_frequency === 'weekly' ? 'selected' : '' %>>Weekly — collect every 7 days</option>
+      <option value="monthly" <%= form.payment_frequency === 'monthly' ? 'selected' : '' %>>Monthly — collect every 30 days</option>
+    </select>
+  </div>
+  <div>
+    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Monthly Interest (%)</label>
+    <input id="rate" name="monthly_interest_rate" type="number" step="0.01" min="0" value="<%= form.monthly_interest_rate || 10 %>" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+    <p class="text-xs text-slate-500 mt-1">Standard rate is 10% / month regardless of mode.</p>
+  </div>
+</div>
+
+<div>
+  <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">First Payment Date</label>
+  <input name="start_date" type="date" value="<%= form.start_date || fmt.today() %>" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+  <p class="text-xs text-slate-500 mt-1">Daily: first collection this day. Weekly/monthly: first installment due at the end of the first week/month.</p>
+</div>
+
+<div>
+  <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Purpose</label>
+  <input name="purpose" value="<%= form.purpose || '' %>" placeholder="e.g. Business capital, school fees" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+</div>
+
+<div>
+  <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Notes</label>
+  <textarea name="notes" rows="2" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent"><%= form.notes || '' %></textarea>
+</div>

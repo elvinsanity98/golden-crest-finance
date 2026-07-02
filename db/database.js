@@ -48,6 +48,7 @@ async function init() {
       total_interest REAL NOT NULL,
       total_payable REAL NOT NULL,
       daily_payment REAL NOT NULL,
+      payment_frequency TEXT NOT NULL DEFAULT 'daily',
       status TEXT NOT NULL DEFAULT 'active',
       purpose TEXT,
       notes TEXT,
@@ -73,6 +74,14 @@ async function init() {
   ];
   for (const sql of stmts) {
     await client.execute(sql);
+  }
+
+  // Migrations for existing databases (additive only — no data changes).
+  // payment_frequency: 'daily' | 'weekly' | 'monthly'; existing loans stay daily.
+  try {
+    await client.execute(`ALTER TABLE loans ADD COLUMN payment_frequency TEXT NOT NULL DEFAULT 'daily'`);
+  } catch (err) {
+    if (!/duplicate column/i.test(String(err.message || err))) throw err;
   }
 }
 

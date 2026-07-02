@@ -54,7 +54,7 @@
             <th class="px-5 py-3 text-left">Borrower</th>
             <th class="px-5 py-3 text-right">Principal</th>
             <th class="px-5 py-3 text-right">Total Payable</th>
-            <th class="px-5 py-3 text-right">Daily</th>
+            <th class="px-5 py-3 text-right">Installment</th>
             <th class="px-5 py-3 text-right">Balance</th>
             <th class="px-5 py-3 text-left">Term</th>
             <th class="px-5 py-3 text-center">Status</th>
@@ -69,7 +69,7 @@
               </td>
               <td class="px-5 py-3 text-right font-medium"><%= fmt.money(l.principal) %></td>
               <td class="px-5 py-3 text-right font-medium"><%= fmt.money(l.total_payable) %></td>
-              <td class="px-5 py-3 text-right font-medium"><%= fmt.money(l.daily_payment) %></td>
+              <td class="px-5 py-3 text-right font-medium"><%= fmt.money(l.daily_payment) %><span class="text-xs text-slate-400">/<%= l.progress.freqLabel %></span></td>
               <td class="px-5 py-3 text-right font-bold <%= l.progress.balance > 0 ? 'text-slate-900' : 'text-emerald-600' %>"><%= fmt.money(l.progress.balance) %></td>
               <td class="px-5 py-3 text-xs text-slate-500"><%= fmt.date(l.start_date) %><br>→ <%= fmt.date(l.end_date) %></td>
               <td class="px-5 py-3 text-center">
@@ -101,7 +101,7 @@
               <span class="text-sm font-bold"><%= fmt.money(l.progress.balance) %></span>
             </div>
             <div class="text-xs text-slate-500 mt-1 flex items-center justify-between">
-              <span>#<%= l.id %> · daily <%= fmt.money(l.daily_payment) %></span>
+              <span>#<%= l.id %> · <%= fmt.money(l.daily_payment) %>/<%= l.progress.freqLabel %></span>
               <% if (l.status === 'active') {
                    var ms, mc;
                    if (l.progress.scheduled) { ms = 'Scheduled'; mc = 'bg-blue-100 text-blue-700'; }

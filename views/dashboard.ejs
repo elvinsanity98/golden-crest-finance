@@ -45,7 +45,7 @@
         <select name="loan_id" required data-searchable data-placeholder="Search a borrower…" class="w-full rounded-lg bg-slate-700 border border-slate-600 text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
           <% dueToday.forEach(l => { %>
             <option value="<%= l.id %>" data-daily="<%= l.daily_payment %>">
-              <%= l.borrower_name %> · #<%= l.id %> · daily <%= fmt.money(l.daily_payment) %><%= l.progress.arrears > 0 ? ' · ARREARS ' + fmt.money(l.progress.arrears) : '' %>
+              <%= l.borrower_name %> · #<%= l.id %> · <%= fmt.money(l.daily_payment) %>/<%= l.progress.freqLabel %><%= l.progress.arrears > 0 ? ' · ARREARS ' + fmt.money(l.progress.arrears) : '' %>
             </option>
           <% }); %>
         </select>
@@ -90,7 +90,7 @@
             <div class="flex-1 min-w-0">
               <a href="/loans/<%= l.id %>" class="font-semibold text-slate-900 hover:text-brand-600 truncate block"><%= l.borrower_name %></a>
               <div class="text-xs text-slate-500">
-                Daily <%= fmt.money(l.daily_payment) %> · Bal <%= fmt.money(l.progress.balance) %>
+                <%= fmt.money(l.daily_payment) %>/<%= l.progress.freqLabel %> · Bal <%= fmt.money(l.progress.balance) %>
                 <% if (l.progress.arrears > 0) { %><span class="text-red-600 font-semibold">· -<%= fmt.money(l.progress.arrears) %></span><% } %>
               </div>
             </div>
