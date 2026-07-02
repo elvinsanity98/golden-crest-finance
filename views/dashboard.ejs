@@ -8,10 +8,10 @@
     <div class="mt-1 text-xs text-slate-500"><%= totals.paymentsToday %> payment(s)</div>
   </div>
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 transition-card">
-    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Expected today</div>
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Collectible today</div>
     <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900"><%= fmt.money(expectedToday) %></div>
     <% if (expectedToday <= 0) { %>
-      <div class="mt-1 text-xs text-slate-500">No installments due today</div>
+      <div class="mt-1 text-xs text-slate-500">Nothing due — all caught up</div>
     <% } else if (totals.collectedToday >= expectedToday) { %>
       <div class="mt-1 text-xs text-emerald-600 font-semibold">
         ✓ <%= ((totals.collectedToday / expectedToday) * 100).toFixed(0) %>% collected<% if (totals.collectedToday > expectedToday) { %> · +<%= fmt.money(totals.collectedToday - expectedToday) %> extra<% } %>

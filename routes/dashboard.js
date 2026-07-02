@@ -31,12 +31,13 @@ router.get('/', async (req, res, next) => {
 
     const activeLoans = await db.all(`
       SELECT l.*, b.full_name AS borrower_name,
-        (SELECT COALESCE(SUM(amount),0) FROM payments p WHERE p.loan_id = l.id) AS total_paid
+        (SELECT COALESCE(SUM(amount),0) FROM payments p WHERE p.loan_id = l.id) AS total_paid,
+        (SELECT COALESCE(SUM(amount),0) FROM payments p WHERE p.loan_id = l.id AND p.payment_date = ?) AS paid_today
       FROM loans l
       JOIN borrowers b ON b.id = l.borrower_id
       WHERE l.status = 'active'
       ORDER BY l.created_at DESC
-    `);
+    `, [todayStr]);
 
     const decorated = activeLoans.map(l => {
       const progress = loanProgress(l, Number(l.total_paid));
@@ -47,20 +48,25 @@ router.get('/', async (req, res, next) => {
         const d = daysBetween(l.start_date, todayStr) + 1; // Day 1 = start
         dueTodayFlag = (d % progress.intervalDays === 0) || todayStr === l.end_date;
       }
-      return { ...l, total_paid: Number(l.total_paid), progress, dueTodayFlag };
+      // Collectible today = what was owed at the start of the day: everything
+      // expected through today (arrears + today's installment when due) minus
+      // what had been paid before today. progress.expectedPaid already counts
+      // today's installment once due, so no double count.
+      const paidBeforeToday = Number(l.total_paid) - Number(l.paid_today);
+      const owedToday = Math.max(0, +(progress.expectedPaid - paidBeforeToday).toFixed(2));
+      return { ...l, total_paid: Number(l.total_paid), paid_today: Number(l.paid_today), progress, dueTodayFlag, owedToday };
     });
     const overdueCount = decorated.filter(l => l.progress.overdue).length;
     const arrearsTotal = decorated.reduce((sum, l) => sum + l.progress.arrears, 0);
     const outstanding = decorated.reduce((sum, l) => sum + l.progress.balance, 0);
 
-    // Expected today = installments actually due today (frequency-aware).
-    const expectedToday = decorated
-      .filter(l => l.dueTodayFlag)
-      .reduce((s, l) => s + l.progress.installment, 0);
+    // Expected today = total collectible today across active loans:
+    // installments due today plus unpaid arrears carried in.
+    const expectedToday = decorated.reduce((s, l) => s + l.owedToday, 0);
 
-    // Collection worklist: installment due today, or already behind.
+    // Collection worklist: anything collectible today.
     const dueToday = decorated
-      .filter(l => l.dueTodayFlag || l.progress.arrears > 0)
+      .filter(l => l.owedToday > 0 || l.dueTodayFlag)
       .sort((a, b) => b.progress.arrears - a.progress.arrears)
       .slice(0, 8);
 
