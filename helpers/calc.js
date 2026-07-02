@@ -75,9 +75,11 @@ function loanProgress(loan, totalPaid) {
   else if (elapsedDays >= termDays) periodsDue = periods;
   else periodsDue = Math.min(periods, Math.floor(elapsedDays / interval));
 
+  // Cap at total_payable: installment is rounded to centavos, so
+  // installment × periodsDue can drift a few cents above the true total.
   const expectedPaid = periodsDue >= periods
     ? Number(loan.total_payable)
-    : +(installment * periodsDue).toFixed(2);
+    : Math.min(Number(loan.total_payable), +(installment * periodsDue).toFixed(2));
   const arrears = Math.max(0, +(expectedPaid - totalPaid).toFixed(2));
   const installmentsBehind = arrears > 0 ? Math.ceil(arrears / installment - 0.01) : 0;
   const percentPaid = loan.total_payable > 0 ? Math.min(100, (totalPaid / loan.total_payable) * 100) : 0;
