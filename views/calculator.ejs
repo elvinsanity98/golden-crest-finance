@@ -11,7 +11,7 @@
       <input name="term_days" type="number" min="1" value="<%= form.term_days %>" placeholder="e.g. 30, 60, 90" class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-transparent">
       <div class="mt-2 flex flex-wrap gap-2">
         <% [15, 30, 60, 90, 120].forEach(d => { %>
-          <button type="submit" formnovalidate name="term_days" value="<%= d %>" class="text-xs px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded font-semibold text-slate-700"><%= d %>d</button>
+          <button type="button" data-term="<%= d %>" onclick="var f=this.form;f.term_days.value=this.dataset.term;if(f.principal.value)f.submit();" class="text-xs px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded font-semibold text-slate-700"><%= d %>d</button>
         <% }); %>
       </div>
     </div>

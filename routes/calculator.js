@@ -4,13 +4,19 @@ const { today } = require('../helpers/format');
 
 const router = express.Router();
 
+// Repeated query keys parse as arrays; take the last non-empty value.
+function scalar(v) {
+  if (Array.isArray(v)) v = v.filter(x => x !== '').pop() || '';
+  return v || '';
+}
+
 router.get('/', (req, res) => {
   let result = null;
   let error = null;
   let schedule = null;
   const form = {
-    principal: req.query.principal || '',
-    term_days: req.query.term_days || '',
+    principal: scalar(req.query.principal),
+    term_days: scalar(req.query.term_days),
     monthly_rate: req.query.monthly_rate || 10,
     frequency: FREQUENCIES[req.query.frequency] ? req.query.frequency : 'daily',
     start_date: req.query.start_date || today()
