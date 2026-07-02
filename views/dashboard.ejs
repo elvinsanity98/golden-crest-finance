@@ -14,7 +14,7 @@
       <div class="mt-1 text-xs text-slate-500">No installments due today</div>
     <% } else if (totals.collectedToday >= expectedToday) { %>
       <div class="mt-1 text-xs text-emerald-600 font-semibold">
-        ✓ Target met<% if (totals.collectedToday > expectedToday) { %> · +<%= fmt.money(totals.collectedToday - expectedToday) %> extra<% } %>
+        ✓ <%= ((totals.collectedToday / expectedToday) * 100).toFixed(0) %>% collected<% if (totals.collectedToday > expectedToday) { %> · +<%= fmt.money(totals.collectedToday - expectedToday) %> extra<% } %>
       </div>
     <% } else { %>
       <div class="mt-1 text-xs text-amber-600">
