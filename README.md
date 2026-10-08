@@ -103,6 +103,18 @@ Both URLs read/write to the same Turso DB. Changes in one show up immediately on
 
 ---
 
+## Demo Mode
+
+Anyone can explore the full app without an account and without seeing real records.
+
+- **Enter:** click **Try the Demo** on the login page, open `/demo` directly (shareable link), or sign in with `demo` / `demo`.
+- **Sandboxed data:** demo sessions read and write separate `demo_borrowers`, `demo_loans` and `demo_payments` tables. The DB layer (`db/database.js`) redirects every query from a demo session to those tables, so real borrowers are never shown and never modified.
+- **Sample portfolio:** 10 fictional borrowers and 10 loans covering every state: on track, arrears, overdue, weekly, monthly, scheduled, paid and written off. Dates are generated relative to today.
+- **Resets:** the sandbox reloads itself on the first demo visit of each day, and the **Reset demo data** button in the banner reloads it on demand.
+- **Turn it off:** set `DEMO_MODE=off` to hide the button, 404 the `/demo` routes and end existing demo sessions.
+
+---
+
 ## Loan Math
 
 For every loan:
@@ -132,6 +144,7 @@ end_date      = start_date + term_days − 1     # inclusive, Day 1 = start_date
 | `ADMIN_PASSWORD` | first boot only | initial admin password when DB is seeded |
 | `NODE_ENV` | prod | set to `production` to enable HTTPS-only cookies |
 | `PORT` | optional | host sets this automatically; defaults to 3000 |
+| `DEMO_MODE` | optional | public demo sandbox is on by default; set to `off` to disable |
 
 ---
 
@@ -146,6 +159,7 @@ render.yaml            Render Blueprint config
 
 db/database.js         libSQL client + schema init + sync wrapper helpers
 db/seed.js             Idempotent admin user seeding
+db/demo.js             Demo sandbox: demo_* tables, sample data, daily reset
 
 helpers/calc.js        Loan math + day-progress logic
 helpers/format.js      ₱, dates, Manila timezone
@@ -160,6 +174,7 @@ routes/payments.js     Record / delete payments
 routes/calculator.js   Public loan calculator
 routes/reports.js      Date-ranged reports
 routes/print.js        Printable payment cards (1–5 per Letter page)
+routes/demo.js         Demo entry (/demo) and reset
 
 views/                 EJS templates (login, dashboard, CRUD pages, print sheet)
 public/                CSS + JS for the browser

@@ -9,6 +9,7 @@ const methodOverride = require('method-override');
 
 const db = require('./db/database');
 const seed = require('./db/seed');
+const demo = require('./db/demo');
 
 const { requireAuth, injectUser } = require('./middleware/auth');
 const format = require('./helpers/format');
@@ -23,6 +24,7 @@ const reportsRoutes = require('./routes/reports');
 const incomeRoutes = require('./routes/income');
 const printRoutes = require('./routes/print');
 const aboutRoutes = require('./routes/about');
+const demoRoutes = require('./routes/demo');
 
 const app = express();
 
@@ -80,6 +82,7 @@ app.use((req, res, next) => {
     devUrl: 'https://www.facebook.com/elvinsanity98/',
     year: new Date().getFullYear()
   };
+  res.locals.demoEnabled = demo.enabled();
   res.locals.title = '';
   res.locals.path = req.path;
   next();
@@ -87,11 +90,25 @@ app.use((req, res, next) => {
 
 app.use(injectUser);
 
+// Demo sandbox: bind each request to its data scope before any route runs.
+// Demo sessions get { demo: true }, which makes the DB layer read and write
+// the demo_* tables only (see db/database.js); everyone else gets the real
+// tables. Every request is given an explicit scope so none is inherited.
+app.use(async (req, res, next) => {
+  const isDemo = demo.isDemoSession(req.session);
+  res.locals.isDemo = isDemo;
+  if (!isDemo) return db.scope.run({ demo: false }, () => next());
+  if (!demo.enabled()) { req.session = null; return res.redirect('/login'); }
+  try { await demo.ensureFresh(); } catch (err) { return next(err); }
+  db.scope.run({ demo: true }, () => next());
+});
+
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 
 app.use('/', authRoutes);
 app.use('/calculator', calculatorRoutes); // public
 app.use('/about', aboutRoutes); // public
+app.use('/demo', demoRoutes); // public entry to the demo sandbox
 
 app.use('/', requireAuth, dashboardRoutes);
 app.use('/borrowers', requireAuth, borrowersRoutes);

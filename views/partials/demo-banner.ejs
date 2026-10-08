@@ -1,0 +1,17 @@
+<div class="no-print mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+  <div class="flex items-start gap-3 min-w-0">
+    <span class="inline-block text-[10px] font-extrabold uppercase tracking-wider px-2 py-1 rounded bg-amber-400 text-slate-900 flex-shrink-0">Demo</span>
+    <p class="text-sm text-amber-900">
+      <strong>You are in the demo sandbox.</strong>
+      Every borrower and loan here is fictional sample data. Try anything &mdash; it resets every day.
+    </p>
+  </div>
+  <div class="flex items-center gap-2 flex-shrink-0">
+    <form action="/demo/reset" method="POST" data-confirm="Reset the demo back to the fresh sample data?">
+      <button class="bg-white hover:bg-amber-100 border border-amber-300 text-amber-900 font-semibold px-3 py-1.5 rounded-lg text-xs">Reset demo data</button>
+    </form>
+    <form action="/logout" method="POST">
+      <button class="bg-ink hover:bg-ink-700 text-white font-semibold px-3 py-1.5 rounded-lg text-xs">Exit demo</button>
+    </form>
+  </div>
+</div>

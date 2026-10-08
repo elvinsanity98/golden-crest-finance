@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const { createClient } = require('@libsql/client');
+const { AsyncLocalStorage } = require('async_hooks');
 
 // In production set DATABASE_URL=libsql://<your-db>.turso.io and DATABASE_AUTH_TOKEN=<token>
 // Locally we fall back to a SQLite file under ./data/.
@@ -85,23 +86,43 @@ async function init() {
   }
 }
 
+// --- Demo sandbox -----------------------------------------------------------
+// A request running inside scope.run({ demo: true }, ...) has every query sent
+// through get/all/run transparently redirected to the demo_* copies of the
+// business tables. This is the single choke point that keeps demo sessions
+// away from real borrower data — route code never has to think about it.
+const scope = new AsyncLocalStorage();
+const DEMO_PREFIX = 'demo_';
+const BUSINESS_TABLES = /\b(borrowers|loans|payments)\b/g;
+
+function inDemo() {
+  const store = scope.getStore();
+  return !!(store && store.demo);
+}
+
+// \b never matches inside identifiers like loan_id, payment_date or
+// demo_loans (underscore is a word character), so only bare table names move.
+function scoped(sql) {
+  return inDemo() ? sql.replace(BUSINESS_TABLES, DEMO_PREFIX + '$1') : sql;
+}
+
 // Thin compatibility helpers so route code stays compact.
 async function get(sql, args = []) {
-  const r = await client.execute({ sql, args });
+  const r = await client.execute({ sql: scoped(sql), args });
   return r.rows[0] || null;
 }
 
 async function all(sql, args = []) {
-  const r = await client.execute({ sql, args });
+  const r = await client.execute({ sql: scoped(sql), args });
   return r.rows;
 }
 
 async function run(sql, args = []) {
-  const r = await client.execute({ sql, args });
+  const r = await client.execute({ sql: scoped(sql), args });
   return {
     lastInsertRowid: r.lastInsertRowid != null ? Number(r.lastInsertRowid) : null,
     changes: Number(r.rowsAffected || 0)
   };
 }
 
-module.exports = { client, init, get, all, run };
+module.exports = { client, init, get, all, run, scope, scoped, inDemo, DEMO_PREFIX };

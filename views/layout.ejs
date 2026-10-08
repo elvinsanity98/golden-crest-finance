@@ -21,6 +21,9 @@
     <%- include('partials/sidebar') %>
 
     <main class="flex-1 min-w-0 lg:ml-64 pt-4 pb-24 lg:pb-10 px-4 sm:px-6 lg:px-8">
+      <% if (typeof isDemo !== 'undefined' && isDemo) { %>
+        <%- include('partials/demo-banner') %>
+      <% } %>
       <% if (typeof flash !== 'undefined' && flash) { %>
         <%- include('partials/flash') %>
       <% } %>
